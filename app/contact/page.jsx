@@ -62,7 +62,7 @@ const ContactContent = () => {
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              Reach Out to{' '}
+              Reach Out To{' '}
               <span className="text-transparent bg-clip-text bg-linear-to-r from-amber-300 to-yellow-400">
                 SURYAENTERPRISES
               </span>
