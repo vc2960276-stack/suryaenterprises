@@ -2,14 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import {
-  getProductPrice,
-  images,
-} from "../products/components/productGallery";
+import { getProduct, formatINR } from "../products/data/products";
 
 function readCart() {
   if (typeof window === "undefined") return {};
-
   const savedCart = window.localStorage.getItem("surya-cart");
   return savedCart ? JSON.parse(savedCart) : {};
 }
@@ -31,15 +27,12 @@ export default function CheckoutPage() {
   const [cart] = useState(readCart);
   const [details, setDetails] = useState(initialDetails);
   const [orderPlaced, setOrderPlaced] = useState(false);
-  const cartItems = Object.entries(cart).map(([index, quantity]) => ({
-    index: Number(index),
-    image: images[Number(index)],
-    quantity,
-    price: getProductPrice(Number(index)),
-  }));
+  const cartItems = Object.entries(cart)
+    .map(([sku, quantity]) => ({ product: getProduct(sku), quantity }))
+    .filter((item) => item.product);
   const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0,
+    (total, item) => total + item.product.price * item.quantity,
+    0
   );
 
   const updateDetails = (event) => {
@@ -59,7 +52,7 @@ export default function CheckoutPage() {
   if (orderPlaced) {
     return (
       <main className="min-h-screen bg-white px-6 py-24 text-center">
-        <div className="mx-auto max-w-xl border border-green-100 bg-green-50 px-8 py-16">
+        <div className="mx-auto max-w-xl border border-green-100 bg-green-50 px-8 py-16" data-testid="order-confirmation">
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-700">
             Order confirmed
           </p>
@@ -161,21 +154,21 @@ export default function CheckoutPage() {
               </p>
             ) : (
               cartItems.map((item) => (
-                <div key={item.image.src} className="grid grid-cols-[1fr_auto] gap-4 border-t border-slate-200 py-4 text-sm">
+                <div key={item.product.sku} className="grid grid-cols-[1fr_auto] gap-4 border-t border-slate-200 py-4 text-sm">
                   <span className="leading-5">
-                    Agricultural product {String(item.index + 1).padStart(2, "0")} × {item.quantity}
+                    {item.product.name} × {item.quantity}
                   </span>
-                  <span>₹ {(item.price * item.quantity).toLocaleString("en-IN")}.00</span>
+                  <span>{formatINR(item.product.price * item.quantity)}</span>
                 </div>
               ))
             )}
             <div className="grid grid-cols-[1fr_auto] border-t border-slate-200 py-4 text-sm font-bold">
               <span>Subtotal</span>
-              <span>₹ {subtotal.toLocaleString("en-IN")}.00</span>
+              <span>{formatINR(subtotal)}</span>
             </div>
             <div className="grid grid-cols-[1fr_auto] border-t border-slate-200 py-4 font-bold">
               <span>Total</span>
-              <span>₹ {subtotal.toLocaleString("en-IN")}.00</span>
+              <span>{formatINR(subtotal)}</span>
             </div>
           </div>
 
@@ -186,6 +179,7 @@ export default function CheckoutPage() {
           <button
             type="submit"
             disabled={cartItems.length === 0}
+            data-testid="place-order-btn"
             className="mt-6 bg-green-700 px-6 py-3 font-bold text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             Place order

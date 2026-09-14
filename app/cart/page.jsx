@@ -4,43 +4,34 @@ import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, ShoppingCart } from "lucide-react";
 import { useState } from "react";
-import {
-  getProductPrice,
-  images,
-} from "../products/components/productGallery";
+import { getProduct, formatINR } from "../products/data/products";
 
 function readCart() {
   if (typeof window === "undefined") return {};
-
   const savedCart = window.localStorage.getItem("surya-cart");
   return savedCart ? JSON.parse(savedCart) : {};
 }
 
 export default function CartPage() {
   const [cart, setCart] = useState(readCart);
-  const cartItems = Object.entries(cart).map(([index, quantity]) => ({
-    index: Number(index),
-    image: images[Number(index)],
-    quantity,
-    price: getProductPrice(Number(index)),
-  }));
+  const cartItems = Object.entries(cart)
+    .map(([sku, quantity]) => ({ product: getProduct(sku), quantity }))
+    .filter((item) => item.product);
   const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
   const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0,
+    (total, item) => total + item.product.price * item.quantity,
+    0
   );
 
-  const updateQuantity = (index, change) => {
+  const updateQuantity = (sku, change) => {
     setCart((currentCart) => {
-      const nextQuantity = (currentCart[index] || 0) + change;
+      const nextQuantity = (currentCart[sku] || 0) + change;
       const nextCart = { ...currentCart };
-
       if (nextQuantity > 0) {
-        nextCart[index] = nextQuantity;
+        nextCart[sku] = nextQuantity;
       } else {
-        delete nextCart[index];
+        delete nextCart[sku];
       }
-
       window.localStorage.setItem("surya-cart", JSON.stringify(nextCart));
       window.dispatchEvent(new Event("surya-cart-updated"));
       return nextCart;
@@ -68,7 +59,7 @@ export default function CartPage() {
         </header>
 
         {cartItems.length === 0 ? (
-          <div className="border border-slate-200 px-6 py-20 text-center">
+          <div className="border border-slate-200 px-6 py-20 text-center" data-testid="empty-cart">
             <ShoppingCart className="mx-auto h-12 w-12 text-green-700" aria-hidden="true" />
             <h2 className="mt-5 text-2xl font-bold text-slate-900">Your cart is empty</h2>
             <p className="mt-2 text-slate-500">Add products to see them here.</p>
@@ -92,13 +83,13 @@ export default function CartPage() {
 
               {cartItems.map((item) => (
                 <div
-                  key={item.image.src}
+                  key={item.product.sku}
                   className="grid gap-4 border-b border-slate-200 px-4 py-6 md:grid-cols-[48px_minmax(220px,1fr)_120px_180px_140px] md:items-center md:gap-6 md:px-6"
                 >
                   <button
                     type="button"
-                    onClick={() => updateQuantity(item.index, -item.quantity)}
-                    aria-label={`Remove product ${item.index + 1}`}
+                    onClick={() => updateQuantity(item.product.sku, -item.quantity)}
+                    aria-label={`Remove ${item.product.name}`}
                     className="flex h-9 w-9 items-center justify-center bg-slate-50 text-xl text-green-700 hover:bg-green-50"
                   >
                     ×
@@ -106,26 +97,24 @@ export default function CartPage() {
                   <div className="flex items-center gap-4">
                     <div className="relative h-20 w-20 shrink-0 bg-white">
                       <Image
-                        src={item.image.src}
-                        alt={item.image.alt}
+                        src={item.product.image}
+                        alt={item.product.name}
                         fill
                         sizes="80px"
                         className="object-contain"
                       />
                     </div>
-                    <h2 className="font-bold leading-6 text-slate-800">
-                      Agricultural product {String(item.index + 1).padStart(2, "0")} - crop care solution
-                    </h2>
+                    <h2 className="font-bold leading-6 text-slate-800">{item.product.name}</h2>
                   </div>
                   <div className="font-bold text-slate-800">
                     <span className="mr-2 text-xs font-normal text-slate-500 md:hidden">Price</span>
-                    ₹ {item.price.toLocaleString("en-IN")}.00
+                    {formatINR(item.product.price)}
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-slate-500 md:hidden">Quantity</span>
                     <button
                       type="button"
-                      onClick={() => updateQuantity(item.index, -1)}
+                      onClick={() => updateQuantity(item.product.sku, -1)}
                       aria-label="Decrease quantity"
                       className="flex h-9 w-9 items-center justify-center bg-slate-50 text-green-800 hover:bg-green-50"
                     >
@@ -136,7 +125,7 @@ export default function CartPage() {
                     </span>
                     <button
                       type="button"
-                      onClick={() => updateQuantity(item.index, 1)}
+                      onClick={() => updateQuantity(item.product.sku, 1)}
                       aria-label="Increase quantity"
                       className="flex h-9 w-9 items-center justify-center bg-green-700 text-white hover:bg-green-800"
                     >
@@ -145,19 +134,10 @@ export default function CartPage() {
                   </div>
                   <div className="font-bold text-green-700">
                     <span className="mr-2 text-xs font-normal text-slate-500 md:hidden">Subtotal</span>
-                    ₹ {(item.price * item.quantity).toLocaleString("en-IN")}.00
+                    {formatINR(item.product.price * item.quantity)}
                   </div>
                 </div>
               ))}
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                className="border-2 border-green-700 px-8 py-3 font-bold text-green-700 transition hover:bg-green-700 hover:text-white"
-              >
-                Update Cart
-              </button>
             </div>
 
             <aside className="mt-12 ml-auto max-w-md bg-slate-50 p-8">
@@ -165,11 +145,11 @@ export default function CartPage() {
               <div className="mt-5 border-t border-slate-200 pt-5">
                 <div className="flex justify-between text-sm text-slate-500">
                   <span>Subtotal</span>
-                  <span>₹ {subtotal.toLocaleString("en-IN")}.00</span>
+                  <span>{formatINR(subtotal)}</span>
                 </div>
                 <div className="mt-6 flex justify-between border-t border-slate-200 pt-5 font-bold text-slate-900">
                   <span>Total</span>
-                  <span>₹ {subtotal.toLocaleString("en-IN")}.00</span>
+                  <span>{formatINR(subtotal)}</span>
                 </div>
               </div>
               <Link
