@@ -34,3 +34,9 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Pay-In checkout
+
+The `/checkout` page now uses the Surya Pay-In API instead of the Razorpay browser checkout. It creates a PayU Dynamic QR order through server-side routes and shows a Surya-hosted payment page with a QR code, UPI app link, and payment-status check.
+
+The PayU key, salt, and Pay-In API token remain server-side in `.env.local`.
