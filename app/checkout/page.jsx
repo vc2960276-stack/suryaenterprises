@@ -27,6 +27,7 @@ export default function CheckoutPage() {
   const [cart] = useState(readCart);
   const [details, setDetails] = useState(initialDetails);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const cartItems = Object.entries(cart)
     .map(([sku, quantity]) => ({ product: getProduct(sku), quantity }))
     .filter((item) => item.product);
@@ -42,13 +43,159 @@ export default function CheckoutPage() {
     }));
   };
 
-  const placeOrder = (event) => {
-    event.preventDefault();
-    setOrderPlaced(true);
-    window.localStorage.removeItem("surya-cart");
-    window.dispatchEvent(new Event("surya-cart-updated"));
-  };
 
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+
+      const script = document.createElement("script");
+
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+
+      script.onload = () => resolve(true);
+
+      script.onerror = () => resolve(false);
+
+      document.body.appendChild(script);
+    });
+  };
+  const placeOrder = async (event) => {
+    event.preventDefault();
+
+    if (cartItems.length === 0 || isLoading) return;
+
+    setIsLoading(true);
+
+    try {
+      // Load Razorpay SDK
+      const loaded = await loadRazorpay();
+
+      if (!loaded) {
+        alert("Razorpay failed to load. Please try again.");
+        return;
+      }
+
+      // Create Razorpay order
+      const response = await fetch("/api/order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: subtotal,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.error || "Failed to create order"
+        );
+      }
+
+      const razorpayOrder = data.order;
+
+      // Open Razorpay payment popup
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+
+        amount: razorpayOrder.amount,
+
+        currency: razorpayOrder.currency,
+
+        name: "Surya Enterprises",
+
+        description: "Product Purchase",
+
+        order_id: razorpayOrder.id,
+
+        prefill: {
+          name: `${details.firstName} ${details.lastName}`,
+          email: details.email,
+          contact: details.phone,
+        },
+
+        notes: {
+          address: details.address,
+          city: details.city,
+          state: details.state,
+          pinCode: details.pinCode,
+        },
+
+        theme: {
+          color: "#15803d",
+        },
+
+        handler: async function (paymentResponse) {
+          try {
+            const verifyResponse = await fetch(
+              "/api/razorpay/verify-payment",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  ...paymentResponse,
+                  details,
+                  cartItems,
+                  subtotal,
+                }),
+              }
+            );
+            const verifyData = await verifyResponse.json();
+
+            if (!verifyResponse.ok || !verifyData.success) {
+              alert("Payment verification failed.");
+              return;
+            }
+
+    // Payment successful
+            setOrderPlaced(true);
+
+            window.localStorage.removeItem("surya-cart");
+
+            window.dispatchEvent(
+              new Event("surya-cart-updated")
+            );
+          } catch (error) {
+            console.error("Verification error:", error);
+
+            alert("Payment verification failed.");
+          }
+        },
+
+        modal: {
+          ondismiss: function () {
+            console.log("Payment popup closed");
+          },
+        },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+
+      paymentObject.on("payment.failed", function (response) {
+        console.error("Payment failed:", response.error);
+
+        alert(
+          response.error?.description ||
+          "Payment failed. Please try again."
+        );
+      });
+
+      paymentObject.open();
+    } catch (error) {
+      console.error("Payment error:", error);
+
+      alert(error.message || "Something went wrong.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   if (orderPlaced) {
     return (
       <main className="min-h-screen bg-white px-6 py-24 text-center">
@@ -173,16 +320,22 @@ export default function CheckoutPage() {
           </div>
 
           <div className="mt-8 border-b border-slate-200 pb-6">
-            <p className="font-semibold text-slate-900">Cash on delivery</p>
-            <p className="mt-3 bg-white p-4 text-sm leading-6 text-slate-600">Pay with cash upon delivery.</p>
+            <p className="font-semibold text-slate-900">
+              Online Payment
+            </p>
+
+            <p className="mt-3 bg-white p-4 text-sm leading-6 text-slate-600">
+              Pay securely using UPI, Credit Card, Debit Card or Net Banking
+              through Razorpay.
+            </p>
           </div>
           <button
             type="submit"
-            disabled={cartItems.length === 0}
+            disabled={cartItems.length === 0 || isLoading}
             data-testid="place-order-btn"
             className="mt-6 bg-green-700 px-6 py-3 font-bold text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
-            Place order
+            {isLoading ? "Processing..." : `Pay ${formatINR(subtotal)}`}
           </button>
         </aside>
       </form>
