@@ -1,32 +1,43 @@
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+function getRazorpay() {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (!keyId || !keySecret) {
+        throw new Error(
+            "Razorpay credentials are not configured"
+        );
+    }
+
+    return new Razorpay({
+        key_id: keyId,
+        key_secret: keySecret,
+    });
+}
 
 export async function POST(request) {
     try {
-        const body = await request.json();
+        const { amount } = await request.json();
 
-        const { amount } = body;
-
-        if (!amount || amount <= 0) {
+        if (!amount || Number(amount) <= 0) {
             return NextResponse.json(
-                { error: "Invalid payment amount" },
+                {
+                    success: false,
+                    error: "Invalid amount",
+                },
                 { status: 400 }
             );
         }
 
-        // Amount must be in paise.
-        const options = {
+        const razorpay = getRazorpay();
+
+        const order = await razorpay.orders.create({
             amount: Math.round(Number(amount) * 100),
             currency: "INR",
             receipt: `receipt_${Date.now()}`,
-        };
-
-        const order = await razorpay.orders.create(options);
+        });
 
         return NextResponse.json({
             success: true,
@@ -36,7 +47,10 @@ export async function POST(request) {
         console.error("Razorpay order error:", error);
 
         return NextResponse.json(
-            { error: "Unable to create payment order" },
+            {
+                success: false,
+                error: error.message || "Failed to create order",
+            },
             { status: 500 }
         );
     }
