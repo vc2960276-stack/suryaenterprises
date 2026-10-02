@@ -17,8 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      # Build fixtures only. Configure the real origin and secrets on the host.
-      PAYIN_BACKEND_ORIGIN: https://ci-build-api.suryaenter.in
+      # Build fixtures only; exercise production routing without an origin override.
       PUBLIC_BASE_URL: https://www.suryaenter.in
       MONGO_URL: mongodb://127.0.0.1:27017/
       NEXT_TELEMETRY_DISABLED: 1

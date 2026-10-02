@@ -16,8 +16,22 @@ test("gateway rewrites preserve payment assets, status, cancellation and merchan
     { source: "/gateway/:path*", destination: "https://api.suryaenter.in/:path*" }
   ]);
   assert.deepEqual(gatewayRewrites({}), []);
-  for (const target of [undefined, "http://localhost:8001", "https://suryaenter.in", "https://www.suryaenter.in", "https://user:pass@backend.host", "https://backend.host/path", "https://backend.example"]) {
+  for (const target of ["http://localhost:8001", "https://suryaenter.in", "https://www.suryaenter.in", "https://user:pass@backend.host", "https://backend.host/path", "https://backend.example"]) {
     assert.throws(() => gatewayRewrites({ ...production, PAYIN_BACKEND_ORIGIN: target }), /PAYIN_BACKEND_ORIGIN/);
+  }
+});
+
+test("production uses the deployed backend when its optional hosting override is absent", () => {
+  const expected = [
+    { source: "/pay/:path*", destination: "https://payin-frontend-hy1p.vercel.app/pay/:path*" },
+    { source: "/gateway/:path*", destination: "https://payin-frontend-hy1p.vercel.app/:path*" }
+  ];
+  for (const value of [undefined, "", "   "]) {
+    assert.deepEqual(gatewayRewrites({ NODE_ENV: "production", PAYIN_BACKEND_ORIGIN: value }), expected);
+    assert.doesNotThrow(() => validatePaymentEnvironment({
+      ...production, PAYIN_BACKEND_ORIGIN: value, PUBLIC_BASE_URL: undefined,
+      PAYIN_BACKEND_WEBHOOK_URL: "https://www.suryaenter.in/gateway/api/webhooks/payu/payment"
+    }));
   }
 });
 

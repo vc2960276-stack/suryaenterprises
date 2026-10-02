@@ -1,3 +1,6 @@
+const PRODUCTION_BACKEND_ORIGIN = "https://payin-frontend-hy1p.vercel.app";
+const PRODUCTION_PUBLIC_ORIGIN = "https://www.suryaenter.in";
+
 function publicOrigin(value, key) {
   let url;
   try { url = new URL(value); } catch { throw new Error(`${key} must be a configured HTTPS origin`); }
@@ -8,13 +11,13 @@ function publicOrigin(value, key) {
 }
 
 export function gatewayRewrites(env) {
-  const rawTarget = String(env.PAYIN_BACKEND_ORIGIN || "").trim();
+  const configuredTarget = String(env.PAYIN_BACKEND_ORIGIN || "").trim();
+  const rawTarget = configuredTarget || (env.NODE_ENV === "production" ? PRODUCTION_BACKEND_ORIGIN : "");
   if (!rawTarget) {
-    if (env.NODE_ENV === "production") throw new Error("PAYIN_BACKEND_ORIGIN must point to the Express API hosting origin before production build");
     return [];
   }
   const target = publicOrigin(rawTarget, "PAYIN_BACKEND_ORIGIN");
-  const website = publicOrigin(env.PUBLIC_BASE_URL || "https://suryaenter.in", "PUBLIC_BASE_URL");
+  const website = publicOrigin(env.PUBLIC_BASE_URL || PRODUCTION_PUBLIC_ORIGIN, "PUBLIC_BASE_URL");
   if (new URL(target).hostname.replace(/^www\./, "") === new URL(website).hostname.replace(/^www\./, "")) {
     throw new Error("PAYIN_BACKEND_ORIGIN must be the separate API host to prevent a rewrite loop");
   }
@@ -34,7 +37,7 @@ export function validatePaymentEnvironment(env) {
   if (/^(test|demo|e2e)$|(?:demo|e2e)[_-]/i.test(env.DB_NAME)) throw new Error("DB_NAME must identify the production database");
   if (env.PAYU_ENV !== "production") throw new Error("PAYU_ENV must be production for the live deployment");
   if (env.PAYIN_API_TOKEN.length < 32) throw new Error("PAYIN_API_TOKEN must be at least 32 characters");
-  const website = publicOrigin(env.PUBLIC_BASE_URL || "https://suryaenter.in", "PUBLIC_BASE_URL");
+  const website = publicOrigin(env.PUBLIC_BASE_URL || PRODUCTION_PUBLIC_ORIGIN, "PUBLIC_BASE_URL");
   const callback = new URL(env.PAYIN_BACKEND_WEBHOOK_URL);
   if (callback.origin !== website || callback.pathname !== "/gateway/api/webhooks/payu/payment" || callback.username || callback.password || callback.search || callback.hash) {
     throw new Error("PAYIN_BACKEND_WEBHOOK_URL must be the public gateway PayU webhook URL");
