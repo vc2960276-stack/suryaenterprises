@@ -1,0 +1,33 @@
+name: Verify storefront
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # Build fixtures only. Configure the real origin and secrets on the host.
+      PAYIN_BACKEND_ORIGIN: https://ci-build-api.suryaenter.in
+      PUBLIC_BASE_URL: https://www.suryaenter.in
+      MONGO_URL: mongodb://127.0.0.1:27017/
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - run: npm audit --audit-level=high

@@ -74,20 +74,20 @@ const AboutContent = () => {
             {/* Company Description */}
             <div className="space-y-6 text-gray-600 text-lg leading-relaxed mb-12">
               <p className="text-xl text-gray-700 font-medium border-l-4 border-green-500 pl-6 italic">
-                "Headquartered in Delhi, India, we are a renowned Agro Chemical company committed to revolutionizing agriculture."
+                &quot;Headquartered in Delhi, India, we are a renowned Agro Chemical company committed to revolutionizing agriculture.&quot;
               </p>
               
               <p>
                 <span className="font-semibold text-green-700 text-xl">SURYAENTERPRISES </span> stands at the 
                 forefront of agricultural innovation, delivering precision-engineered solutions that empower farmers 
                 across the nation. Our comprehensive range of products and unwavering commitment to quality have 
-                established us as a trusted partner in India's agricultural growth story.
+                established us as a trusted partner in India&apos;s agricultural growth story.
               </p>
 
               <p>
                 We believe in the power of sustainable innovation. Every product we develop, from pesticides to 
                 plant growth regulators, is crafted with meticulous attention to environmental responsibility and 
-                farmer prosperity. Our mission extends beyond business—it's about cultivating a greener, more 
+                farmer prosperity. Our mission extends beyond business—it&apos;s about cultivating a greener, more
                 abundant future for generations to come.
               </p>
             </div>
@@ -217,13 +217,13 @@ const AboutContent = () => {
                   </div>
                   
                   <h4 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6 leading-tight">
-                    We understand your <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-emerald-600">crop's need</span>
+                    We understand your <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-emerald-600">crop&apos;s need</span>
                   </h4>
                   
                   <p className="text-xl text-gray-700 leading-relaxed mb-8">
                     Nurtured in Gujarat, <span className="font-bold text-green-700">SURYAENTERPRISES</span> is your trusted agrochemical companion, 
-                    devoted to crafting top-tier solutions - chemicals, fertilizers, pesticides - tailored to your crop's desires. 
-                    <span className="block mt-4 text-2xl font-bold text-green-600">Let's grow greatness together!</span>
+                    devoted to crafting top-tier solutions - chemicals, fertilizers, pesticides - tailored to your crop&apos;s desires.
+                    <span className="block mt-4 text-2xl font-bold text-green-600">Let&apos;s grow greatness together!</span>
                   </p>
                   
                   <div className="flex flex-wrap gap-4 justify-center">
@@ -457,7 +457,7 @@ const AboutContent = () => {
                         Sustainability Focus
                       </h5>
                       <p className="text-gray-600 leading-relaxed">
-                        We're committed to environmentally responsible practices, ensuring that our products not only 
+                        We&apos;re committed to environmentally responsible practices, ensuring that our products not only
                         benefit your crops but also promote sustainable, long-term farming.
                       </p>
                     </div>
@@ -514,9 +514,9 @@ const AboutContent = () => {
               <div className="relative z-10">
                 <h4 className="text-2xl font-bold mb-3">Our Commitment to Excellence</h4>
                 <p className="text-white/90 max-w-3xl">
-                  At SURYAENTERPRISES, quality isn't just a standard—it's our foundation. Every product undergoes 
+                  At SURYAENTERPRISES, quality isn&apos;t just a standard—it&apos;s our foundation. Every product undergoes
                   rigorous testing and research to ensure it meets the highest standards of efficacy and safety. 
-                  We're not just creating agricultural solutions; we're cultivating trust, one farmer at a time.
+                  We&apos;re not just creating agricultural solutions; we&apos;re cultivating trust, one farmer at a time.
                 </p>
                 <div className="flex gap-4 mt-6">
                   <span className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm">ISO 9001:2024 Certified</span>
@@ -528,7 +528,7 @@ const AboutContent = () => {
             {/* Footer Quote */}
             <div className="text-center border-t border-gray-200 pt-8">
               <p className="text-gray-500 italic text-lg">
-                "Shaping the future of agriculture through innovation, sustainability, and unwavering dedication to the farming community."
+                &quot;Shaping the future of agriculture through innovation, sustainability, and unwavering dedication to the farming community.&quot;
               </p>
               <div className="flex justify-center gap-2 mt-4">
                 <Leaf className="w-4 h-4 text-green-500" />

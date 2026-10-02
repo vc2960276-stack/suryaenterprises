@@ -60,7 +60,7 @@ const ManagementContent = () => {
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed">
             At SURYAENTERPRISES, our success is a collective effort led by a dedicated and experienced management team. 
-            Meet the individuals who drive our company's vision, innovation, and commitment to agricultural excellence.
+            Meet the individuals who drive our company&apos;s vision, innovation, and commitment to agricultural excellence.
           </p>
         </div>
 
@@ -69,7 +69,7 @@ const ManagementContent = () => {
           <div className="grid md:grid-cols-5 gap-8 items-center">
             {/* Left side - Message (takes 3 columns) */}
             <div className="md:col-span-3 relative">
-              <div className="absolute -top-4 -left-4 text-6xl text-amber-200 opacity-50">"</div>
+              <div className="absolute -top-4 -left-4 text-6xl text-amber-200 opacity-50">&quot;</div>
               <div className="relative bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
                 <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
                   <Quote className="w-6 h-6 text-amber-500 mr-2" />
@@ -81,18 +81,18 @@ const ManagementContent = () => {
                   <p>
                     I am delighted to welcome you to the digital home of SURYAENTERPRISES Greens Ltd., where we cultivate 
                     progress, nurture innovation, and empower a greener tomorrow. For over 12 years formerly known as 
-                    'Solar Crop Science', SURYAENTERPRISES has stood as a beacon of agricultural excellence. Our journey, 
+                    &apos;Solar Crop Science&apos;, SURYAENTERPRISES has stood as a beacon of agricultural excellence. Our journey,
                     rooted in dedication and driven by science, has led us to develop AgroChemical solutions that not 
                     only transform crops but also shape the landscape of modern farming.
                   </p>
                   <p>
                     I invite you to explore our website and discover a world of possibilities. From our meticulously 
                     crafted products to insightful agricultural resources, our platform is designed to be your companion 
-                    in growth. Whether you're an experienced farmer, a novice cultivator, or an industry partner, 
+                    in growth. Whether you&apos;re an experienced farmer, a novice cultivator, or an industry partner,
                     SURYAENTERPRISES is here to support you at every step.
                   </p>
                   <p>
-                    Thank you for being part of the SURYAENTERPRISES family. Together, let's continue to cultivate excellence 
+                    Thank you for being part of the SURYAENTERPRISES family. Together, let&apos;s continue to cultivate excellence
                     and sow the seeds of prosperity.
                   </p>
                 </div>
@@ -153,7 +153,7 @@ const ManagementContent = () => {
 
             {/* Right side - Message (takes 3 columns) */}
             <div className="md:col-span-3 relative order-1 md:order-2">
-              <div className="absolute -top-4 -right-4 text-6xl text-amber-200 opacity-50">"</div>
+              <div className="absolute -top-4 -right-4 text-6xl text-amber-200 opacity-50">&quot;</div>
               <div className="relative bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
                 <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
                   <Quote className="w-6 h-6 text-amber-500 mr-2" />
@@ -162,13 +162,13 @@ const ManagementContent = () => {
                 
                 <div className="space-y-4 text-gray-600 leading-relaxed">
                   <p>
-                    As CEO and Director, I'm honoured to lead a team dedicated to delivering innovative and sustainable 
+                    As CEO and Director, I&apos;m honoured to lead a team dedicated to delivering innovative and sustainable
                     Agro Chemical solutions. With a deep understanding of the needs of farmers, we strive to provide 
                     excellence, quality, and support in every product we offer.
                   </p>
                   <p>
-                    Our vision extends beyond business – we're cultivating a greener, more prosperous future for 
-                    agriculture. Join us in this journey of growth, innovation, and empowerment. Together, let's sow 
+                    Our vision extends beyond business – we&apos;re cultivating a greener, more prosperous future for
+                    agriculture. Join us in this journey of growth, innovation, and empowerment. Together, let&apos;s sow
                     the seeds of success.
                   </p>
                 </div>

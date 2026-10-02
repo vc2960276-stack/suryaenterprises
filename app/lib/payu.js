@@ -61,21 +61,6 @@ export function generatePayUPaymentHash({
     PAYU_SALT,
   ].join("|");
 
-  console.log("========== PAYU HASH ==========");
-  console.log({
-    txnid,
-    amount,
-    productinfo,
-    firstname,
-    email,
-    udf1,
-    udf2,
-    udf3,
-    udf4,
-    udf5,
-  });
-  console.log("===============================");
-
   return sha512(hashString);
 }
 
@@ -188,25 +173,6 @@ export async function createPayUIntent({
 
   params.set("hash", hash);
 
-  console.log(
-    "========== PAYU UPI INTENT REQUEST =========="
-  );
-
-  console.log({
-    endpoint,
-    txnid,
-    amount: formattedAmount,
-    pg: "UPI",
-    bankcode: "INTENT",
-    txn_s2s_flow: "4",
-    clientIp,
-    deviceInfo,
-  });
-
-  console.log(
-    "============================================="
-  );
-
   // --------------------------------
   // Call PayU
   // --------------------------------
@@ -223,19 +189,10 @@ export async function createPayUIntent({
     body: params.toString(),
 
     cache: "no-store",
+    signal: AbortSignal.timeout(15000),
   });
 
   const raw = await response.text();
-
-  console.log(
-    "========== PAYU INTENT RAW RESPONSE =========="
-  );
-
-  console.log(raw);
-
-  console.log(
-    "==============================================="
-  );
 
   // --------------------------------
   // Parse response
@@ -251,30 +208,12 @@ export async function createPayUIntent({
     };
   }
 
-  console.log(
-    "========== PAYU INTENT PARSED RESPONSE =========="
-  );
-
-  console.log(
-    JSON.stringify(payload, null, 2)
-  );
-
-  console.log(
-    "================================================="
-  );
-
   // --------------------------------
   // HTTP error
   // --------------------------------
 
   if (!response.ok) {
-    throw new Error(
-      payload?.metaData?.message ||
-      payload?.message ||
-      payload?.msg ||
-      raw ||
-      `PayU returned HTTP ${response.status}`
-    );
+    throw new Error(`PayU returned HTTP ${response.status}`);
   }
 
   // --------------------------------
@@ -316,34 +255,12 @@ export async function createPayUIntent({
   // --------------------------------
 
   if (!intentUri) {
-    const payuMessage =
-      payload?.metaData?.message ||
-      payload?.metaData?.txnMessage ||
-      payload?.message ||
-      payload?.msg ||
-      result?.message ||
-      result?.msg ||
-      "PayU did not return a UPI intent";
-
-    throw new Error(
-      `PayU UPI Intent failed: ${payuMessage}. ` +
-      `Full response: ${JSON.stringify(payload)}`
-    );
+    throw new Error("PayU did not return a UPI intent");
   }
 
   // --------------------------------
   // SUCCESS
   // --------------------------------
-
-  console.log(
-    "========== PAYU UPI DEEP LINK =========="
-  );
-
-  console.log(intentUri);
-
-  console.log(
-    "========================================="
-  );
 
   return {
     txnId:
@@ -425,6 +342,7 @@ export async function verifyPayUPayment(
           }).toString(),
 
         cache: "no-store",
+        signal: AbortSignal.timeout(15000),
       }
     );
 
@@ -443,11 +361,7 @@ export async function verifyPayUPayment(
   }
 
   if (!response.ok) {
-    throw new Error(
-      payload?.msg ||
-      raw ||
-      "PayU verify payment failed"
-    );
+    throw new Error(`PayU verification returned HTTP ${response.status}`);
   }
 
   return payload;

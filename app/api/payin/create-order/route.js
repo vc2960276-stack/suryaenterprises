@@ -126,8 +126,11 @@ export async function POST(request) {
     // ---------------------------------
     // 9. Internal PayU callback URL
     // ---------------------------------
-    const baseUrl =
-      process.env.PUBLIC_BASE_URL || "https://suryaent.in";
+    // Must be the exact public host (the apex domain redirects to www, and
+    // PayU will not follow a redirect when posting the callback).
+    const baseUrl = String(
+      process.env.PUBLIC_BASE_URL || "https://www.suryaenter.in"
+    ).replace(/\/+$/, "");
 
     const callbackUrl =
       `${baseUrl}/api/payin/payu-callback`;
@@ -220,7 +223,8 @@ export async function POST(request) {
 
       order.payuMerchantVpa = payu.merchantVpa;
 
-      order.payuQrString = payu.qrString;
+      // The UPI intent URI doubles as the QR payload.
+      order.payuQrString = payu.intentUri;
 
       order.payuResponse = payu.raw;
 
@@ -254,8 +258,15 @@ export async function POST(request) {
           merchant_name:
             payu.merchantName,
 
-          // IMPORTANT
+          // IMPORTANT: the UPI deep link. Also exposed as qr_string /
+          // upi_intent because a UPI intent URI is a valid QR payload.
           deep_link:
+            payu.intentUri,
+
+          upi_intent:
+            payu.intentUri,
+
+          qr_string:
             payu.intentUri,
 
           // Optional

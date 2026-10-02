@@ -68,16 +68,16 @@ const AboutContent = () => {
             
             <div className="space-y-6 text-gray-600 text-lg leading-relaxed">
               <p className="text-xl text-gray-700">
-                At SURYAENTERPRISES, we're not just an agrochemical company; we're your allies in cultivating success. 
-                Based in the thriving agricultural heartland of Gujarat, India, we've established ourselves as a 
+                At SURYAENTERPRISES, we&apos;re not just an agrochemical company; we&apos;re your allies in cultivating success.
+                Based in the thriving agricultural heartland of Gujarat, India, we&apos;ve established ourselves as a
                 beacon of quality, innovation, and sustainability in the industry.
               </p>
               
               <div className="bg-linear-to-r from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-100">
                 <p className="text-gray-700 italic">
-                  Being for over 12 years in the business, formerly known as 'Solar Crop Science', our journey began 
+                  Being for over 12 years in the business, formerly known as &apos;Solar Crop Science&apos;, our journey began
                   with a simple yet powerful mission: to empower farmers and nourish the earth. With a deep understanding 
-                  of crop needs and a relentless commitment to innovation, we've been transforming the way agriculture thrives.
+                  of crop needs and a relentless commitment to innovation, we&apos;ve been transforming the way agriculture thrives.
                 </p>
               </div>
             </div>
@@ -139,7 +139,7 @@ const AboutContent = () => {
               <p className="text-gray-600 leading-relaxed">
                 Our products are the result of rigorous research, cutting-edge technology, and a team of dedicated 
                 experts who share a passion for agricultural progress. By harnessing the power of chemistry, biology, 
-                and agronomy, we develop solutions that address the unique challenges faced by farmers in today's 
+                and agronomy, we develop solutions that address the unique challenges faced by farmers in today&apos;s
                 ever-changing world.
               </p>
             </div>

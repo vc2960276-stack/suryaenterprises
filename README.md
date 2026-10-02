@@ -1,42 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Surya Enterprises storefront and PayU bridge
 
-## Getting Started
+Next.js storefront with server-side PayU UPI intent creation, verified payment
+callbacks and status reconciliation. Uses Node 24.
 
-First, run the development server:
+## Local setup
 
 ```bash
+nvm use
+npm ci
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Fill in server-side values before creating payments. The site runs at
+`http://localhost:3000`. `/checkout` uses browser-only same-origin wrappers that
+keep the internal Pay-In token on the server. See [PAYIN_API.md](PAYIN_API.md).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Production routing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Configure the actual Express hosting origin in `PAYIN_BACKEND_ORIGIN` before
+building. It must be a separate service, not this storefront's domain.
 
-## Learn More
+| Public path | Express destination |
+|---|---|
+| `/pay/:path*` | `/pay/:path*` (checkout, assets, status, cancellation and receipts) |
+| `/gateway/:path*` | `/:path*` (admin, merchant and provider webhook API) |
 
-To learn more about Next.js, take a look at the following resources:
+This preserves the storefront's own `/api/v1/payin/*` bridge. `suryaenter.in`
+currently redirects to `www.suryaenter.in`; use `www` for API and PayU callbacks
+so POST requests reach the intended endpoint directly.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Configure every value in `.env.production.example` on the host, including the
+production database, live PayU key/salt and shared internal token.
+`PAYIN_API_TOKEN` must equal backend `SURYA_PAYIN_API_TOKEN`; both services must
+use the same PayU key/salt. Provider callbacks use
+`https://www.suryaenter.in/api/payin/payu-callback`; verified payloads are relayed
+to `https://www.suryaenter.in/gateway/api/webhooks/payu/payment`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Production builds reject missing, insecure or looping Express origins.
+Payment runtime rejects missing secrets, sandbox PayU settings, test/demo
+DB names and incorrect backend webhook destinations. Provider requests have a
+15-second timeout. Full provider/customer payloads are not logged or returned
+as error messages.
 
-## Deploy on Vercel
+```bash
+npm run verify
+npm start
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Pay-In checkout
-
-The `/checkout` page now uses the Surya Pay-In API instead of the Razorpay browser checkout. It creates a PayU Dynamic QR order through server-side routes and shows a Surya-hosted payment page with a QR code, UPI app link, and payment-status check.
-
-The PayU key, salt, and Pay-In API token remain server-side in `.env.local`.
+`verify` runs lint, configuration/provider tests and a production build. GitHub
+CI uses synthetic build-only configuration, makes no real payments, and audits
+dependencies. CI success does not verify the actual deployed Express host.
+The full three-service guide is `Payin-Backend/docs/PRODUCTION.md` in the shared
+workspace. No workflow deploys this project.

@@ -15,6 +15,7 @@ const OrderSchema = new mongoose.Schema(
     provider: { type: String, default: "payu" },
     payuTxnId: String,
     payuPaymentId: String,
+    payuBankRefNum: String,
     payuMerchantVpa: String,
     payuQrString: String,
     payuResponse: mongoose.Schema.Types.Mixed,

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { validatePaymentEnvironment } from "../../deployment-config.mjs";
 
 const MONGO_URL = process.env.MONGO_URL;
 
@@ -16,12 +17,23 @@ if (!cached) {
 }
 
 export async function connectDB() {
+    validatePaymentEnvironment(process.env);
     if (cached.conn) {
         return cached.conn;
     }
 
     if (!cached.promise) {
-        cached.promise = mongoose.connect(MONGO_URL);
+        const options = {};
+
+        // Optional: pin the database. Without it Mongoose uses the URI default ("test").
+        if (process.env.DB_NAME) {
+            options.dbName = process.env.DB_NAME;
+        }
+
+        cached.promise = mongoose.connect(MONGO_URL, options).catch((error) => {
+            cached.promise = null;
+            throw error;
+        });
     }
 
     cached.conn = await cached.promise;

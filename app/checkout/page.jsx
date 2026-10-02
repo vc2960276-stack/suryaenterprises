@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { getProduct, formatINR } from "../products/data/products";
 
@@ -131,7 +132,14 @@ export default function CheckoutPage() {
         );
       }
 
-      if (!data.data?.qr_string) {
+      // The API returns the UPI intent as qr_string (and deep_link);
+      // accept either so older/newer responses both work.
+      const qrString =
+        data.data?.qr_string ||
+        data.data?.deep_link ||
+        data.data?.upi_intent;
+
+      if (!qrString) {
         throw new Error(
           "PayU did not return a payment QR."
         );
@@ -140,7 +148,7 @@ export default function CheckoutPage() {
       // IMPORTANT:
       // This changes the page from checkout
       // to the payment screen.
-      setPayment(data.data);
+      setPayment({ ...data.data, qr_string: qrString });
     } catch (error) {
       console.error("Pay-In error:", error);
 
@@ -337,11 +345,12 @@ export default function CheckoutPage() {
 
           {/* QR */}
           <div className="mx-auto mt-8 w-fit rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <img
+            <Image
               src={qrUrl}
               alt="UPI payment QR code"
               width={320}
               height={320}
+              unoptimized
               className="h-64 w-64 sm:h-80 sm:w-80"
             />
           </div>

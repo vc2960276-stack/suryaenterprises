@@ -214,8 +214,8 @@ const CareerContent = () => {
             </span>
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed">
-            At SURYAENTERPRISES, we believe in nurturing not just crops, but also careers. We're on a mission to revolutionize 
-            agriculture through innovation, sustainability, and a commitment to excellence. If you're passionate about 
+            At SURYAENTERPRISES, we believe in nurturing not just crops, but also careers. We&apos;re on a mission to revolutionize
+            agriculture through innovation, sustainability, and a commitment to excellence. If you&apos;re passionate about
             making a meaningful impact and growing with a dynamic team, we invite you to explore the exciting career 
             opportunities we have to offer.
           </p>
@@ -233,7 +233,7 @@ const CareerContent = () => {
                 <Sparkles className="w-7 h-7 text-white" />
               </div>
               <h4 className="text-xl font-bold text-gray-800 mb-2">Innovation</h4>
-              <p className="text-gray-600">Embrace cutting-edge technology and be part of a team that's shaping the future of agriculture.</p>
+              <p className="text-gray-600">Embrace cutting-edge technology and be part of a team that&apos;s shaping the future of agriculture.</p>
             </div>
 
             <div className="group bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
@@ -249,7 +249,7 @@ const CareerContent = () => {
                 <TrendingUp className="w-7 h-7 text-white" />
               </div>
               <h4 className="text-xl font-bold text-gray-800 mb-2">Growth</h4>
-              <p className="text-gray-600">Join a company that's growing rapidly and offers ample opportunities for professional advancement.</p>
+              <p className="text-gray-600">Join a company that&apos;s growing rapidly and offers ample opportunities for professional advancement.</p>
             </div>
 
             <div className="group bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
@@ -476,7 +476,7 @@ const CareerContent = () => {
 
         {/* CTA Section */}
         <div className="text-center mt-16">
-          <p className="text-gray-600 mb-4">Don't see the right fit? Send us your resume anyway</p>
+          <p className="text-gray-600 mb-4">Don&apos;t see the right fit? Send us your resume anyway</p>
           <button className="px-8 py-4 bg-linear-to-r from-green-600 to-emerald-600 text-white rounded-full font-semibold hover:shadow-lg hover:shadow-green-200 transition-all duration-300 hover:-translate-y-1">
             Submit Your Resume
           </button>
