@@ -19,6 +19,37 @@ function sha512(value) {
     .digest("hex");
 }
 
+function providerHttpError(response, raw, operation) {
+  const error = new Error(operation === "verification"
+    ? `PayU verification returned HTTP ${response.status}`
+    : `PayU returned HTTP ${response.status}`);
+  error.code = response.status === 429
+    ? "PAYMENT_PROVIDER_RATE_LIMITED"
+    : "PAYMENT_PROVIDER_HTTP_ERROR";
+
+  const retryAfter = response.headers.get("retry-after");
+  if (retryAfter) {
+    const seconds = /^\d+$/.test(retryAfter)
+      ? Number(retryAfter)
+      : Math.ceil((Date.parse(retryAfter) - Date.now()) / 1000);
+    if (Number.isSafeInteger(seconds) && seconds >= 0) error.retryAfterSeconds = seconds;
+  }
+
+  // Preserve operational evidence without storing HTML, credentials or customer data.
+  const requestId = response.headers.get("x-request-id") || response.headers.get("x-correlation-id");
+  error.providerDiagnostics = {
+    operation,
+    httpStatus: response.status,
+    responseFormat: raw.trim().startsWith("<") ? "html" : raw.trim().startsWith("{") ? "json" : "text",
+    rateLimitMentioned: /too many requests|rate.limit|request.limit/i.test(raw),
+    challengeMentioned: /captcha|cloudflare|cf-chl|bot.detect|security.challenge|access.denied/i.test(raw),
+    ...(requestId && /^[A-Za-z0-9._:-]{1,128}$/.test(requestId) ? { requestId } : {}),
+    ...(Number.isSafeInteger(error.retryAfterSeconds) ? { retryAfterSeconds: error.retryAfterSeconds } : {}),
+    ...(/^[a-z]{3}\d$/.test(process.env.VERCEL_REGION || "") ? { region: process.env.VERCEL_REGION } : {}),
+  };
+  return error;
+}
+
 /**
  * PayU standard payment hash
  *
@@ -213,7 +244,7 @@ export async function createPayUIntent({
   // --------------------------------
 
   if (!response.ok) {
-    throw new Error(`PayU returned HTTP ${response.status}`);
+    throw providerHttpError(response, raw, "create-intent");
   }
 
   // --------------------------------
@@ -361,7 +392,7 @@ export async function verifyPayUPayment(
   }
 
   if (!response.ok) {
-    throw new Error(`PayU verification returned HTTP ${response.status}`);
+    throw providerHttpError(response, raw, "verification");
   }
 
   return payload;

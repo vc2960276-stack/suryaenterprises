@@ -20,6 +20,8 @@ const OrderSchema = new mongoose.Schema(
     payuQrString: String,
     payuResponse: mongoose.Schema.Types.Mixed,
     paymentError: String,
+    paymentErrorCode: String,
+    paymentErrorDetails: mongoose.Schema.Types.Mixed,
     redirectUrl: String,
     razorpayOrderId: String,
     razorpayPaymentId: String,

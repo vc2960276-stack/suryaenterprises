@@ -32,6 +32,31 @@ test("provider intent and verification preserve references, bound requests, and 
       await assert.rejects(createPayUIntent(input), error => !/PRIVATE-/.test(error.message));
     }
     await assert.rejects(verifyPayUPayment(input.txnid), error => !/PRIVATE-/.test(error.message));
+
+    // Keep the provider's retry advice while never exposing its response body.
+    global.fetch = async () => new Response("Too many requests PRIVATE-KEY PRIVATE-CUSTOMER", {
+      status: 429, headers: { "Retry-After": "120", "X-Request-Id": "synthetic-request-id" },
+    });
+    for (const operation of [() => createPayUIntent(input), () => verifyPayUPayment(input.txnid)]) {
+      await assert.rejects(operation, error => {
+        assert.equal(error.code, "PAYMENT_PROVIDER_RATE_LIMITED");
+        assert.equal(error.retryAfterSeconds, 120);
+        assert.equal(error.providerDiagnostics.httpStatus, 429);
+        assert.equal(error.providerDiagnostics.rateLimitMentioned, true);
+        assert.equal(error.providerDiagnostics.requestId, "synthetic-request-id");
+        assert.doesNotMatch(JSON.stringify(error) + error.message, /PRIVATE-/);
+        return true;
+      });
+    }
+    global.fetch = async () => new Response("<html>PRIVATE-DATA</html>", {
+      status: 429, headers: { "Retry-After": "not-a-duration" },
+    });
+    await assert.rejects(createPayUIntent(input), error => {
+      assert.equal(error.retryAfterSeconds, undefined);
+      assert.equal(error.providerDiagnostics.responseFormat, "html");
+      assert.doesNotMatch(JSON.stringify(error), /PRIVATE-/);
+      return true;
+    });
   } finally {
     global.fetch = originalFetch;
     for (const [key, value] of Object.entries(previous)) {

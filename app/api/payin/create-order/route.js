@@ -291,6 +291,8 @@ export async function POST(request) {
             paymentError:
               payuError.message ||
               "PayU payment creation failed",
+            paymentErrorCode: payuError.providerDiagnostics ? payuError.code : null,
+            paymentErrorDetails: payuError.providerDiagnostics || null,
           },
         }
       );
@@ -309,6 +311,8 @@ export async function POST(request) {
         error:
           error.message ||
           "Unable to create Pay-In order",
+        ...(error.providerDiagnostics ? { code: error.code } : {}),
+        ...(Number.isSafeInteger(error.retryAfterSeconds) ? { retry_after: error.retryAfterSeconds } : {}),
       },
       { status: 500 }
     );

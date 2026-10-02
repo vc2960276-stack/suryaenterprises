@@ -18,6 +18,10 @@ keep the internal Pay-In token on the server. See [PAYIN_API.md](PAYIN_API.md).
 
 ## Production routing
 
+`vercel.json` runs the storefront's server functions, including PayU intent
+creation and verification, in Mumbai (`bom1`). Keep this deployment setting
+when moving the project: the PayU-calling service should execute in India.
+
 Production uses the deployed Express API at
 `https://payin-frontend-hy1p.vercel.app` by default. Vercel builds and the payment
 runtime use this same destination even when `PAYIN_BACKEND_ORIGIN` is unset.
@@ -46,6 +50,12 @@ Payment runtime rejects missing secrets, sandbox PayU settings, test/demo
 DB names and incorrect backend webhook destinations. Provider requests have a
 15-second timeout. Full provider/customer payloads are not logged or returned
 as error messages.
+
+PayU HTTP errors retain safe diagnostics on the failed order: provider status,
+response format, request reference, region and any `Retry-After` value. A 429
+also returns `PAYMENT_PROVIDER_RATE_LIMITED` to the authenticated backend.
+These diagnostics distinguish provider throttling from a function timeout;
+they do not guarantee that changing the function region resolves a provider restriction.
 
 ```bash
 npm run verify
