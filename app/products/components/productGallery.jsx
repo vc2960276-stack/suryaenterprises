@@ -11,8 +11,11 @@ export default function ProductGallery({ category }) {
     const savedCart = window.localStorage.getItem("surya-cart");
     return savedCart ? JSON.parse(savedCart) : {};
   });
+  const [visibleCount, setVisibleCount] = useState(4);
 
   const viewProducts = productsForView(category);
+  const visibleProducts = viewProducts.slice(0, visibleCount);
+  const hasMoreProducts = visibleCount < viewProducts.length;
 
   const cartItems = Object.entries(cart)
     .map(([sku, quantity]) => ({ product: getProduct(sku), quantity }))
@@ -158,7 +161,7 @@ export default function ProductGallery({ category }) {
       )}
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {viewProducts.map((product) => (
+        {visibleProducts.map((product) => (
           <article
             key={product.sku}
             data-testid={`product-card-${product.sku}`}
@@ -227,6 +230,18 @@ export default function ProductGallery({ category }) {
           </article>
         ))}
       </div>
+
+      {hasMoreProducts && (
+        <div className="mt-12 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setVisibleCount((current) => Math.min(current + 4, viewProducts.length))}
+            className="border border-slate-800 bg-transparent px-12 py-5 text-sm font-medium uppercase tracking-[0.22em] text-slate-800 transition-colors hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700"
+          >
+            Load more
+          </button>
+        </div>
+      )}
     </section>
   );
 }
