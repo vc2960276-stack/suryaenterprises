@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "node:crypto";
 import { connectDB } from "../../../lib/mongodb";
 import Order from "../../../models/Order";
 import { createPayUIntent } from "../../../lib/payu";
@@ -84,10 +85,8 @@ export async function POST(request) {
     // ---------------------------------
     const finalOrderId = String(order_id || makeOrderId());
 
-    const transactionId =
-      `SEPAY_${Date.now()}_${Math.random()
-        .toString(36)
-        .slice(2, 10)}`;
+    // PayU's _payment transaction id is limited to 25 characters.
+    const transactionId = `SP${Date.now()}${crypto.randomBytes(5).toString("hex")}`;
 
     // ---------------------------------
     // 6. Connect database

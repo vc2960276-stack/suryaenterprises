@@ -2,21 +2,9 @@ import { NextResponse } from "next/server";
 import { connectDB } from "../../../lib/mongodb";
 import Order from "../../../models/Order";
 import { verifyPayUPayment } from "../../../lib/payu";
+import { refreshOrderPayment } from "../../../lib/paymentStatus";
 
 export const dynamic = "force-dynamic";
-
-const SUCCESS_STATUSES = ["success", "captured", "paid"];
-
-const FAILED_STATUSES = [
-  "failed",
-  "failure",
-  "usercancelled",
-  "user_cancelled",
-  "cancelled",
-  "dropped",
-  "bounced",
-  "expired",
-];
 
 function bearer(request) {
   const value = request.headers.get("authorization") || "";
@@ -51,34 +39,21 @@ export async function POST(request) {
     if (!order_id) return NextResponse.json({ status: "error", error: "order_id is required" }, { status: 400 });
 
     await connectDB();
-    const order = await Order.findOne({ orderId: String(order_id) });
+    let order = await Order.findOne({ orderId: String(order_id) });
     if (!order) return NextResponse.json({ status: "error", error: "Order not found" }, { status: 404 });
 
-    if (order.paymentStatus === "pending" && order.transactionId) {
+    if (order.transactionId && (order.paymentStatus !== "paid" || !order.payuBankRefNum)) {
       try {
-        const provider = await verifyPayUPayment(order.transactionId);
-        const details = provider?.transaction_details?.[order.transactionId];
-
-        if (details) {
-          const status = String(details.status || details.unmappedstatus || "").toLowerCase();
-
-          if (SUCCESS_STATUSES.includes(status)) order.paymentStatus = "paid";
-          else if (FAILED_STATUSES.includes(status)) order.paymentStatus = "failed";
-
-          order.payuPaymentId = details.mihpayid || order.payuPaymentId;
-          order.payuBankRefNum = details.bank_ref_num || details.bank_ref_no || order.payuBankRefNum;
-          order.payuResponse = provider;
-          await order.save();
-        }
+        order = await refreshOrderPayment(order, { verify: verifyPayUPayment, model: Order });
       } catch (error) {
-        // PayU lookup failed: answer with the last known status instead of an error.
-        console.error("PayU verify_payment failed:", error.message);
+        // An unavailable provider never turns a pending payment into success/failure.
+        console.error("PayU verification unavailable:", error.name);
       }
     }
 
     return NextResponse.json(toResponse(order));
   } catch (error) {
     console.error("PayU check-status error:", error);
-    return NextResponse.json({ status: "error", error: error.message || "Unable to check payment status" }, { status: 500 });
+    return NextResponse.json({ status: "error", error: "Unable to check payment status" }, { status: 500 });
   }
 }

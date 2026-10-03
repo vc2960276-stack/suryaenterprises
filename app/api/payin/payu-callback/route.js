@@ -1,22 +1,10 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "../../../lib/mongodb";
 import Order from "../../../models/Order";
-import { verifyPayUCallbackHash } from "../../../lib/payu";
+import { verifyPayUCallbackHash, verifyPayUPayment } from "../../../lib/payu";
+import { refreshOrderPayment, verifiedPaymentUpdate } from "../../../lib/paymentStatus";
 
 export const dynamic = "force-dynamic";
-
-const SUCCESS_STATUSES = ["success", "captured", "paid"];
-
-const FAILED_STATUSES = [
-  "failed",
-  "failure",
-  "usercancelled",
-  "user_cancelled",
-  "cancelled",
-  "dropped",
-  "bounced",
-  "expired",
-];
 
 /**
  * Optionally relay the verified PayU payload to the Pay-In platform backend so
@@ -26,7 +14,7 @@ const FAILED_STATUSES = [
 async function forwardToPayinBackend(rawBody) {
   const target = process.env.PAYIN_BACKEND_WEBHOOK_URL;
 
-  if (!target) return;
+  if (!target) return true;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 10000);
@@ -42,9 +30,12 @@ async function forwardToPayinBackend(rawBody) {
 
     if (!response.ok) {
       console.error(`Pay-In backend webhook returned HTTP ${response.status}`);
+      return false;
     }
+    return true;
   } catch (error) {
-    console.error("Pay-In backend webhook forward failed:", error.message);
+    console.error("Pay-In backend webhook forward failed:", error.name);
+    return false;
   } finally {
     clearTimeout(timer);
   }
@@ -61,7 +52,7 @@ export async function POST(request) {
     }
 
     await connectDB();
-    const order = await Order.findOne({ transactionId: data.txnid });
+    let order = await Order.findOne({ transactionId: data.txnid });
     if (!order) return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 });
 
     const expectedAmount = Number(order.subtotal || 0).toFixed(2);
@@ -70,26 +61,19 @@ export async function POST(request) {
       return NextResponse.json({ success: false, error: "Amount mismatch" }, { status: 400 });
     }
 
-    const status = String(data.status || "").toLowerCase();
-
-    // Idempotent: a paid order never flips back on a duplicate or late callback.
-    if (order.paymentStatus !== "paid") {
-      order.payuTxnId = data.txnid || order.payuTxnId;
-      order.payuPaymentId = data.mihpayid || order.payuPaymentId;
-      order.payuBankRefNum = data.bank_ref_num || data.bank_ref_no || order.payuBankRefNum;
-      order.payuResponse = data;
-
-      if (SUCCESS_STATUSES.includes(status)) {
-        order.paymentStatus = "paid";
-      } else if (FAILED_STATUSES.includes(status)) {
-        order.paymentStatus = "failed";
-        order.paymentError = data.error_Message || data.error || order.paymentError;
-      }
-
-      await order.save();
+    // The response hash does not cover bank references. Obtain authoritative
+    // status and UTR from PayU rather than trusting callback-only fields.
+    const provider = await verifyPayUPayment(order.transactionId);
+    const verified = verifiedPaymentUpdate(order, provider);
+    const claimsSuccess = ["success", "captured", "paid", "completed"].includes(String(data.status || "").toLowerCase());
+    if (!verified || (claimsSuccess && verified.paymentStatus !== "paid" && order.paymentStatus !== "paid")) {
+      return NextResponse.json({ success: false, error: "Payment verification unavailable" }, { status: 503 });
     }
-
-    await forwardToPayinBackend(raw);
+    order = await refreshOrderPayment(order, { verify: async () => provider, model: Order });
+    if (!await forwardToPayinBackend(raw)) {
+      // Do not acknowledge a dropped relay: PayU can retry this idempotent event.
+      return NextResponse.json({ success: false, error: "Payment recorded; gateway delivery pending" }, { status: 503 });
+    }
 
     return NextResponse.json({ success: true, order_id: order.orderId, payment_status: order.paymentStatus });
   } catch (error) {

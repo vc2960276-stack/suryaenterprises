@@ -20,6 +20,7 @@ jobs:
       # Build fixtures only; exercise production routing without an origin override.
       PUBLIC_BASE_URL: https://www.suryaenter.in
       MONGO_URL: mongodb://127.0.0.1:27017/
+      PAYIN_TEST_MONGO_URI: mongodb://127.0.0.1:27017/
       NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v7
@@ -28,5 +29,16 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Start isolated integration database
+        run: |
+          docker run -d --name surya-ci-mongo -p 27017:27017 mongo:8.0 --bind_ip_all
+          for attempt in $(seq 1 30); do
+            if docker exec surya-ci-mongo mongosh --quiet --eval 'db.adminCommand({ping:1})' >/dev/null 2>&1; then exit 0; fi
+            sleep 2
+          done
+          exit 1
       - run: npm run verify
       - run: npm audit --audit-level=high
+      - name: Stop test database
+        if: always()
+        run: docker rm -f surya-ci-mongo || true

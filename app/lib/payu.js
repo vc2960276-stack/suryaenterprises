@@ -425,11 +425,12 @@ export function verifyPayUCallbackHash(
 ) {
   assertPayUConfig();
 
-  const expected =
-    sha512(
-      [
+  if (data.key !== PAYU_KEY) return false;
+
+  const rawHash = [
         PAYU_SALT,
         data.status || "",
+        ...(data.splitInfo ? [data.splitInfo] : []),
         "",
         "",
         "",
@@ -446,8 +447,9 @@ export function verifyPayUCallbackHash(
         data.amount || "",
         data.txnid || "",
         data.key || PAYU_KEY,
-      ].join("|")
-    );
+      ].join("|");
+  const charges = data.additionalCharges ?? data.additional_charges;
+  const expected = sha512(charges ? `${charges}|${rawHash}` : rawHash);
 
   const received =
     String(data.hash || "")
