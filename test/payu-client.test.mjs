@@ -33,6 +33,28 @@ test("provider intent and verification preserve references, bound requests, and 
     }
     await assert.rejects(verifyPayUPayment(input.txnid), error => !/PRIVATE-/.test(error.message));
 
+    global.fetch = async () => new Response(JSON.stringify({
+      metaData: { txnStatus: "failure" },
+      error: "Hash mismatch PRIVATE-KEY PRIVATE-SALT PRIVATE-CUSTOMER",
+    }), { status: 200 });
+    await assert.rejects(createPayUIntent(input), error => {
+      assert.equal(error.code, "PAYMENT_PROVIDER_INVALID_RESPONSE");
+      assert.equal(error.providerDiagnostics.httpStatus, 200);
+      assert.equal(error.providerDiagnostics.responseFormat, "json");
+      assert.equal(error.providerDiagnostics.hashMismatchMentioned, true);
+      assert.equal(error.providerDiagnostics.transactionStatus, "failure");
+      assert.doesNotMatch(JSON.stringify(error) + error.message, /PRIVATE-/);
+      return true;
+    });
+    global.fetch = async () => new Response("<html>UPI intent not enabled PRIVATE-KEY</html>", { status: 200 });
+    await assert.rejects(createPayUIntent(input), error => {
+      assert.equal(error.code, "PAYMENT_PROVIDER_INVALID_RESPONSE");
+      assert.equal(error.providerDiagnostics.responseFormat, "html");
+      assert.equal(error.providerDiagnostics.paymentModeDisabledMentioned, true);
+      assert.doesNotMatch(JSON.stringify(error) + error.message, /PRIVATE-/);
+      return true;
+    });
+
     // Keep the provider's retry advice while never exposing its response body.
     global.fetch = async () => new Response("Too many requests PRIVATE-KEY PRIVATE-CUSTOMER", {
       status: 429, headers: { "Retry-After": "120", "X-Request-Id": "synthetic-request-id" },

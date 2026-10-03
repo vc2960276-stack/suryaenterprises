@@ -56,6 +56,10 @@ response format, request reference, region and any `Retry-After` value. A 429
 also returns `PAYMENT_PROVIDER_RATE_LIMITED` to the authenticated backend.
 These diagnostics distinguish provider throttling from a function timeout;
 they do not guarantee that changing the function region resolves a provider restriction.
+Responses that arrive with HTTP 200 but contain no UPI intent also retain safe
+diagnostics: response format and indicators of hash, credentials or payment-mode
+errors. Raw response bodies, hash inputs and customer details are never retained
+in these diagnostics.
 
 ```bash
 npm run verify

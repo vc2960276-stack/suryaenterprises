@@ -50,6 +50,24 @@ function providerHttpError(response, raw, operation) {
   return error;
 }
 
+function providerIntentError(response, raw, payload) {
+  const error = providerHttpError(response, raw, "create-intent");
+  error.message = "PayU did not return a UPI intent";
+  error.code = "PAYMENT_PROVIDER_INVALID_RESPONSE";
+
+  // PayU can reject a payment inside an HTTP 200 response. Classify that
+  // response without retaining its error text, which can include hash inputs.
+  const status = String(payload?.metaData?.txnStatus || payload?.status || "").toLowerCase();
+  Object.assign(error.providerDiagnostics, {
+    hashMismatchMentioned: /hash[^\n]{0,80}(?:mismatch|invalid|incorrect)|(?:mismatch|invalid|incorrect)[^\n]{0,80}hash|could not validate hash/i.test(raw),
+    invalidCredentialsMentioned: /invalid (?:merchant )?key|(?:key|salt|credentials)[^\n]{0,40}(?:invalid|incorrect)|(?:invalid|incorrect)[^\n]{0,40}(?:key|salt|credentials)/i.test(raw),
+    paymentModeDisabledMentioned: /(?:upi|s2s|intent)[^\n]{0,80}(?:not enabled|disabled|not activated)/i.test(raw),
+    providerRedirected: response.redirected === true,
+    ...(["success", "failure", "failed", "error", "pending"].includes(status) ? { transactionStatus: status } : {}),
+  });
+  return error;
+}
+
 /**
  * PayU standard payment hash
  *
@@ -286,7 +304,7 @@ export async function createPayUIntent({
   // --------------------------------
 
   if (!intentUri) {
-    throw new Error("PayU did not return a UPI intent");
+    throw providerIntentError(response, raw, payload);
   }
 
   // --------------------------------
