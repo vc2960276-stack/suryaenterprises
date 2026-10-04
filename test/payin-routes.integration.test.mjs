@@ -20,10 +20,11 @@ test("Surya routes create and verify real isolated orders, validate callbacks an
   let relayStatus = 200, relayCount = 0, providerStatus = 200;
   // Execute the production handlers with their import dependencies injected.
   // No route logic or financial query is replaced; MongoDB and PayU SDK run normally.
-  globalThis.__suryaPayinFixture = { crypto, NextResponse, connectDB: async () => mongoose.connection, Order, ...payu, ...payment };
+  globalThis.__suryaPayinFixture = { crypto, NextResponse, connectDB: async () => mongoose.connection, Order,
+    enqueuePaymentRecovery: async () => false, ...payu, ...payment };
   const load = async path => {
     const source = (await readFile(new URL(path, import.meta.url), "utf8")).replace(/^import .*;\r?$/gm, "");
-    return import(`data:text/javascript;base64,${Buffer.from(`const { crypto, NextResponse, connectDB, Order, createPayUIntent, verifyPayUPayment, verifyPayUCallbackHash, refreshOrderPayment, verifiedPaymentUpdate } = globalThis.__suryaPayinFixture;\n${source}`).toString("base64")}`);
+    return import(`data:text/javascript;base64,${Buffer.from(`const { crypto, NextResponse, connectDB, Order, createPayUIntent, verifyPayUPayment, verifyPayUCallbackHash, refreshOrderPayment, verifiedPaymentUpdate, enqueuePaymentRecovery } = globalThis.__suryaPayinFixture;\n${source}`).toString("base64")}`);
   };
   const create = await load("../app/api/payin/create-order/route.js");
   const check = await load("../app/api/payin/check-status/route.js");

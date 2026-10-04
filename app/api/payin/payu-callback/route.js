@@ -3,6 +3,7 @@ import { connectDB } from "../../../lib/mongodb";
 import Order from "../../../models/Order";
 import { verifyPayUCallbackHash, verifyPayUPayment } from "../../../lib/payu";
 import { refreshOrderPayment, verifiedPaymentUpdate } from "../../../lib/paymentStatus";
+import { enqueuePaymentRecovery } from "../../../lib/paymentRecoveryQueue";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,10 @@ export async function POST(request) {
       return NextResponse.json({ success: false, error: "Payment verification unavailable" }, { status: 503 });
     }
     order = await refreshOrderPayment(order, { verify: async () => provider, model: Order });
+    // A durable repair also covers PayU->gateway relay timeouts, independently
+    // of whether PayU retries its callback or the customer keeps polling.
+    await enqueuePaymentRecovery(order.orderId, { kind: "payment",
+      eventId: `${order.orderId}:${order.paymentStatus === "paid" ? "success" : "failed"}` });
     if (!await forwardToPayinBackend(raw)) {
       // Do not acknowledge a dropped relay: PayU can retry this idempotent event.
       return NextResponse.json({ success: false, error: "Payment recorded; gateway delivery pending" }, { status: 503 });

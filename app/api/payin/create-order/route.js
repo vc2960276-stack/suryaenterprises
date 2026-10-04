@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import { connectDB } from "../../../lib/mongodb";
 import Order from "../../../models/Order";
 import { createPayUIntent } from "../../../lib/payu";
+import { enqueuePaymentRecovery } from "../../../lib/paymentRecoveryQueue";
 
 export const dynamic = "force-dynamic";
 
@@ -228,6 +229,10 @@ export async function POST(request) {
       order.payuResponse = payu.raw;
 
       await order.save();
+
+      // Start independent verification while the customer uses the UPI app.
+      // Queue outages must never turn a successfully created UPI into FAILED.
+      await enqueuePaymentRecovery(finalOrderId);
 
       // ---------------------------------
       // 13. Return QR to checkout
