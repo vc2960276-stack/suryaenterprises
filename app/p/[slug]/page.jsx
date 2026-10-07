@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle, BadgeCheck, FlaskConical, Package, Tag, Barcode } from "lucide-react";
+import { AlertTriangle, BadgeCheck, Barcode, Factory, Package, Sprout, Tag, Wheat } from "lucide-react";
 import Breadcrumbs from "../../components/shop/Breadcrumbs";
 import BuyBox from "../../components/shop/BuyBox";
 import PinCheck from "../../components/shop/PinCheck";
@@ -12,17 +12,20 @@ import RatingBadge from "../../components/shop/RatingBadge";
 import RecentlyViewed from "../../components/shop/RecentlyViewed";
 import StockBadge from "../../components/shop/StockBadge";
 import TrackRecent from "../../components/shop/TrackRecent";
+import { isPlaceholderImage } from "../../config/placeholders";
 import { SITE } from "../../config/site";
-import { categoryByData } from "../../config/taxonomy";
+import { brandHref, categoryByData, slugify } from "../../config/taxonomy";
 import {
   getAlsoViewed,
   getPackVariants,
   getProductBySlug,
+  getProductReference,
   getSimilarProducts,
   toCard,
 } from "../../products/data/catalog.server";
+import { specsFor } from "../../products/data/describe.mjs";
 
-// 10k products: render on demand (no generateStaticParams) and cache the
+// 12k+ products: render on demand (no generateStaticParams) and cache the
 // result for a day; catalogue changes ship with a deploy anyway.
 export const revalidate = 86400;
 
@@ -39,10 +42,44 @@ export async function generateMetadata({ params }) {
       title: product.name,
       description,
       type: "website",
-      images: [{ url: product.image, width: 250, height: 250, alt: product.name }],
+      images: [{ url: product.image, width: 320, height: 320, alt: product.name }],
     },
   };
 }
+
+// Safety & usage guidance by level-1 category (our own generic text).
+const SAFETY = {
+  "Crop Protection": [
+    "Wear protective gloves, mask and clothing while mixing and spraying.",
+    "Do not eat, drink or smoke during application.",
+    "Store in the original container in a cool, dry, locked place.",
+    "Dispose of empty containers as instructed on the label.",
+  ],
+  "Crop Nutrition": [
+    "Apply at the rate and timing printed on the label for the crop and growth stage.",
+    "Avoid contact with eyes and skin; wash hands after handling.",
+    "Store sealed in a dry place away from children and food.",
+    "Do not mix with other inputs unless the label permits it.",
+  ],
+  Seeds: [
+    "Sow as directed on the packet; germination depends on season and soil.",
+    "Treated seeds are not for food, feed or oil extraction.",
+    "Store unopened packets in a cool, dry place away from children.",
+    "Keep the packet and lot number until the crop is established.",
+  ],
+  "Farm Machinery": [
+    "Read the operating manual before first use and keep all guards in place.",
+    "Wear eye and ear protection and sturdy footwear while operating.",
+    "Keep fuel and chemicals away from flames; refuel only when the engine is cool.",
+    "Service and store as described by the manufacturer.",
+  ],
+  "Animal Husbandry": [
+    "Use as directed on the label; consult a veterinarian for dosage where applicable.",
+    "Observe any withdrawal period stated on the label before using milk or meat.",
+    "Store in a cool, dry place away from children and feed.",
+    "Keep equipment clean and disinfected between uses.",
+  ],
+};
 
 function SectionCard({ id, title, children }) {
   return (
@@ -61,36 +98,38 @@ export default async function ProductPage({ params }) {
   if (!product) notFound();
 
   const category = categoryByData[product.category];
-  const images = product.images?.length ? product.images : [product.image];
+  const subcategorySlug = slugify(product.subcategory);
+  const subcategoryHref = category ? `/c/${category.slug}/${subcategorySlug}` : undefined;
+  // Development-only reference copy (null in production).
+  const reference = getProductReference(product);
+  const images = reference?.images?.length ? reference.images : product.images?.length ? product.images : [product.image];
+  const placeholder = !reference?.images?.length && isPlaceholderImage(images[0]);
   const variants = getPackVariants(product);
   const similar = getSimilarProducts(product);
   const alsoViewed = getAlsoViewed(product);
   const card = toCard(product);
+  const isCropProtection = product.category === "Crop Protection";
 
-  const specs = [
-    ["Brand", product.brand],
-    ["Active ingredient", product.activeIngredient],
-    ["Category", product.category],
-    ["Pack size", product.unit],
-    ["SKU", product.sku],
-    ...Object.entries(product.specs ?? {}),
-  ].filter(([, v]) => v != null && v !== "");
+  const specs = [...Object.entries(specsFor(product)), ["SKU", product.sku]];
 
   const highlights = [
-    { icon: FlaskConical, label: "Active ingredient", value: product.activeIngredient },
-    { icon: Tag, label: "Category", value: product.category },
+    { icon: Factory, label: "Brand", value: product.brand },
+    { icon: Tag, label: "Subcategory", value: product.subcategory },
     { icon: Package, label: "Pack", value: product.unit },
+    product.crop ? { icon: Wheat, label: "Crop", value: product.crop } : null,
+    product.productType && product.productType !== product.category ? { icon: Sprout, label: "Type", value: product.productType } : null,
     { icon: Barcode, label: "SKU", value: product.sku },
-  ];
+  ].filter(Boolean);
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
     sku: product.sku,
-    image: images,
+    image: product.images?.length ? product.images : [product.image],
     description: product.description,
     brand: { "@type": "Brand", name: product.brand },
+    category: `${product.category} > ${product.subcategory}`,
     offers: {
       "@type": "Offer",
       priceCurrency: "INR",
@@ -108,27 +147,29 @@ export default async function ProductPage({ params }) {
         items={[
           { label: "Home", href: "/" },
           ...(category ? [{ label: category.name, href: `/c/${category.slug}` }] : []),
+          ...(subcategoryHref ? [{ label: product.subcategory, href: subcategoryHref }] : []),
           { label: product.name },
         ]}
       />
 
       <div className="grid gap-3 rounded-lg border border-line bg-white p-3 sm:p-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-8">
         <div className="lg:sticky lg:top-[calc(var(--header-h)+12px)] lg:self-start">
-          <ProductImages images={images} name={product.name} />
+          <ProductImages images={images} name={product.name} category={product.category} placeholder={placeholder} />
         </div>
 
         <div className="min-w-0">
-          <Link href="/products" className="text-[13px] font-semibold text-brand hover:underline">
-            Visit the {product.brand} store
+          <Link href={brandHref(product.brand)} className="text-[13px] font-semibold text-brand hover:underline">
+            More from {product.brand}
           </Link>
           <h1 className="mt-1 font-display text-[22px] font-bold leading-tight text-ink sm:text-2xl">{product.name}</h1>
 
-          <div className="mt-2 flex flex-wrap items-center gap-3">
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
             <RatingBadge rating={product.rating} reviewsCount={product.reviewsCount} size="lg" />
             <span className="inline-flex items-center gap-1 text-xs font-medium text-ink-2">
               <BadgeCheck className="h-4 w-4 text-brand" strokeWidth={1.75} aria-hidden="true" />
-              Sold by {SITE.name}
+              {product.isOwnBrand ? "Manufacturer direct" : `Genuine ${product.brand} product`}
             </span>
+            <span className="text-xs text-ink-2">Sold by {SITE.name}</span>
           </div>
 
           <div className="mt-4">
@@ -174,6 +215,11 @@ export default async function ProductPage({ params }) {
           <div className="mt-6 border-t border-line pt-4">
             <p className="mb-2 text-[13px] font-semibold text-ink">Delivery</p>
             <PinCheck />
+            {product.stateRestrictions?.length > 0 && (
+              <p className="mt-2 text-xs text-ink-2">
+                Not available for delivery to: {product.stateRestrictions.join(", ")}.
+              </p>
+            )}
           </div>
 
           <div className="mt-6 border-t border-line pt-4">
@@ -189,18 +235,6 @@ export default async function ProductPage({ params }) {
                 </div>
               ))}
             </dl>
-            {product.crops?.length > 0 && (
-              <div className="mt-3">
-                <p className="text-xs text-ink-2">Recommended crops (as per label)</p>
-                <ul className="mt-1.5 flex flex-wrap gap-1.5">
-                  {product.crops.map((c) => (
-                    <li key={c} className="chip">
-                      {c}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
 
           <nav aria-label="Product sections" className="mt-6 flex flex-wrap gap-1.5 border-t border-line pt-4">
@@ -220,6 +254,19 @@ export default async function ProductPage({ params }) {
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <SectionCard id="description" title="Description">
           <p className="max-w-prose text-[14px] leading-6 text-ink">{product.description}</p>
+          {/* Development only: the local reference overlay's text (never present in production). */}
+          {reference && (reference.descriptionHtml || reference.description) && (
+            <div className="mt-4 border-t border-line pt-4">
+              {reference.descriptionHtml ? (
+                <div
+                  className="max-w-prose text-[13px] leading-6 text-ink [&_h2]:mt-3 [&_h2]:text-[14px] [&_h2]:font-bold [&_h3]:mt-2 [&_h3]:font-semibold [&_li]:ml-4 [&_li]:list-disc [&_p]:mt-2"
+                  dangerouslySetInnerHTML={{ __html: reference.descriptionHtml }}
+                />
+              ) : (
+                <p className="whitespace-pre-line text-[13px] leading-6 text-ink">{reference.description}</p>
+              )}
+            </div>
+          )}
         </SectionCard>
         <SectionCard id="specifications" title="Specifications">
           <table className="w-full text-[13px]">
@@ -243,28 +290,31 @@ export default async function ProductPage({ params }) {
             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-earth" strokeWidth={1.75} aria-hidden="true" />
             <div className="text-[13px] leading-6 text-ink">
               <p className="font-bold">Always read and follow the label.</p>
-              <p>{SITE.labelDisclaimer}</p>
+              <p>
+                {isCropProtection
+                  ? SITE.labelDisclaimer
+                  : "Use this product only as described on its label and in the manufacturer's instructions. Keep away from children, food and animal feed."}
+              </p>
             </div>
           </div>
           <ul className="mt-3 grid gap-1.5 text-[13px] text-ink sm:grid-cols-2">
-            <li>• Wear protective gloves, mask and clothing while mixing and spraying.</li>
-            <li>• Do not eat, drink or smoke during application.</li>
-            <li>• Store in the original container in a cool, dry, locked place.</li>
-            <li>• Dispose of empty containers as instructed on the label.</li>
+            {(SAFETY[product.category] ?? SAFETY["Crop Protection"]).map((line) => (
+              <li key={line}>• {line}</li>
+            ))}
           </ul>
         </SectionCard>
       </div>
 
       <div className="mt-3 space-y-3">
         {similar.length > 0 && (
-          <ProductRail id="similar" title="Similar products" eyebrow={`More ${product.category.toLowerCase()}`} href={category ? `/c/${category.slug}` : undefined}>
+          <ProductRail id="similar" title="Similar products" eyebrow={`More ${product.subcategory.toLowerCase()}`} href={subcategoryHref}>
             {similar.map((p) => (
               <ProductCard key={p.sku} product={p} layout="rail" />
             ))}
           </ProductRail>
         )}
         {alsoViewed.length > 0 && (
-          <ProductRail id="also-viewed" title="Customers also viewed" eyebrow="From the same category">
+          <ProductRail id="also-viewed" title="Customers also viewed" eyebrow={`From ${product.category.toLowerCase()}`} href={category ? `/c/${category.slug}` : undefined}>
             {alsoViewed.map((p) => (
               <ProductCard key={p.sku} product={p} layout="rail" />
             ))}

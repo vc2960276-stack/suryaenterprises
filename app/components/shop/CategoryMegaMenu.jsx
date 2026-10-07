@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { COMING_SOON } from "../../config/taxonomy";
 import { ICONS } from "./icons";
 
 const listingHref = (slug, params) => {
@@ -14,7 +13,8 @@ const listingHref = (slug, params) => {
   return `/c/${slug}${qs ? `?${qs}` : ""}`;
 };
 
-// Green category strip with hover/click mega menus.
+// Green category strip with hover/click mega menus (subcategories, brands,
+// pack sizes — all counted from the live catalogue).
 export default function CategoryMegaMenu({ categories }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(null);
@@ -65,7 +65,7 @@ export default function CategoryMegaMenu({ categories }) {
           All categories
         </Link>
         {categories.map((c) => {
-          const active = pathname === `/c/${c.slug}`;
+          const active = pathname === `/c/${c.slug}` || pathname.startsWith(`/c/${c.slug}/`);
           return (
             <div key={c.slug} className="flex" onMouseEnter={() => hoverOpen(c.slug)}>
               <Link
@@ -94,14 +94,6 @@ export default function CategoryMegaMenu({ categories }) {
         <Link href="/products/institutional" className="flex items-center px-3 hover:bg-brand-hover" onMouseEnter={hoverClose}>
           Bulk &amp; institutional
         </Link>
-        <span className="ml-auto hidden items-center gap-1 text-xs font-medium text-white/85 xl:flex" onMouseEnter={hoverClose}>
-          Coming soon:
-          {COMING_SOON.map((c) => (
-            <span key={c.slug} className="rounded-full bg-white/12 px-2 py-0.5 text-[11px] text-white">
-              {c.name}
-            </span>
-          ))}
-        </span>
       </div>
 
       {current && (
@@ -121,23 +113,44 @@ export default function CategoryMegaMenu({ categories }) {
               </Link>
             </div>
             <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-2">Popular active ingredients</p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-2">Shop by subcategory</p>
               <ul className="grid gap-0.5">
-                {current.topIngredients.map((ai) => (
-                  <li key={ai.value}>
+                {current.subcategories.map((s) => (
+                  <li key={s.slug}>
                     <Link
-                      href={listingHref(current.slug, { ai: ai.value })}
+                      href={`/c/${current.slug}/${s.slug}`}
                       className="flex items-center justify-between rounded px-2 py-1.5 text-[13px] hover:bg-brand-tint hover:text-brand"
                     >
-                      <span className="truncate">{ai.value}</span>
-                      <span className="text-xs tabular-nums text-ink-3">{ai.count}</span>
+                      <span className="truncate">{s.name}</span>
+                      <span className="text-xs tabular-nums text-ink-3">{s.count}</span>
+                    </Link>
+                  </li>
+                ))}
+                {current.subcategoryCount > current.subcategories.length && (
+                  <li>
+                    <Link href={`/c/${current.slug}`} className="block rounded px-2 py-1.5 text-[13px] font-semibold text-brand hover:underline">
+                      All {current.subcategoryCount} subcategories
+                    </Link>
+                  </li>
+                )}
+              </ul>
+            </div>
+            <div>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-2">Popular brands</p>
+              <ul className="grid gap-0.5">
+                {current.topBrands.map((b) => (
+                  <li key={b.value}>
+                    <Link
+                      href={listingHref(current.slug, { brand: b.value })}
+                      className="flex items-center justify-between rounded px-2 py-1.5 text-[13px] hover:bg-brand-tint hover:text-brand"
+                    >
+                      <span className="truncate">{b.value}</span>
+                      <span className="text-xs tabular-nums text-ink-3">{b.count}</span>
                     </Link>
                   </li>
                 ))}
               </ul>
-            </div>
-            <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-2">Shop by pack size</p>
+              <p className="mb-2 mt-4 text-xs font-bold uppercase tracking-wider text-ink-2">Shop by pack size</p>
               <div className="flex flex-wrap gap-1.5">
                 {current.packSizes.map((u) => (
                   <Link key={u.value} href={listingHref(current.slug, { unit: u.value })} className="chip hover:border-brand hover:text-brand">
@@ -146,33 +159,11 @@ export default function CategoryMegaMenu({ categories }) {
                   </Link>
                 ))}
               </div>
-              <p className="mb-2 mt-5 text-xs font-bold uppercase tracking-wider text-ink-2">Quick picks</p>
-              <ul className="grid gap-0.5 text-[13px]">
-                <li>
-                  <Link href={listingHref(current.slug, { sort: "popularity" })} className="block rounded px-2 py-1.5 hover:bg-brand-tint hover:text-brand">
-                    Top rated {current.name.toLowerCase()}
-                  </Link>
-                </li>
-                <li>
-                  <Link href={listingHref(current.slug, { max: "500" })} className="block rounded px-2 py-1.5 hover:bg-brand-tint hover:text-brand">
-                    Under ₹500
-                  </Link>
-                </li>
-                <li>
-                  <Link href={listingHref(current.slug, { sort: "price_asc" })} className="block rounded px-2 py-1.5 hover:bg-brand-tint hover:text-brand">
-                    Lowest price first
-                  </Link>
-                </li>
-              </ul>
             </div>
             <div className="flex flex-col items-center justify-center rounded-lg p-4" style={{ background: current.tint }}>
-              {(current.illustration || current.image) && (
+              {current.illustration && (
                 <span className="relative h-36 w-36 overflow-hidden rounded-full bg-white ring-1 ring-black/5">
-                  {current.illustration ? (
-                    <Image src={current.illustration} alt="" fill sizes="144px" unoptimized className="object-cover" />
-                  ) : (
-                    <Image src={current.image} alt="" fill sizes="144px" className="object-contain p-3" />
-                  )}
+                  <Image src={current.illustration} alt="" fill sizes="144px" unoptimized className="object-cover" />
                 </span>
               )}
               <span className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink">
@@ -180,8 +171,25 @@ export default function CategoryMegaMenu({ categories }) {
                   const Icon = ICONS[current.icon];
                   return Icon ? <Icon className="h-4 w-4 text-brand" strokeWidth={1.75} aria-hidden="true" /> : null;
                 })()}
-                {current.count.toLocaleString("en-IN")} products
+                {current.count.toLocaleString("en-IN")} products · {current.brandCount} brands
               </span>
+              <ul className="mt-2 flex flex-wrap justify-center gap-1 text-[12px]">
+                <li>
+                  <Link href={listingHref(current.slug, { sort: "popularity" })} className="rounded px-2 py-1 text-brand hover:underline">
+                    Featured first
+                  </Link>
+                </li>
+                <li>
+                  <Link href={listingHref(current.slug, { max: "500" })} className="rounded px-2 py-1 text-brand hover:underline">
+                    Under ₹500
+                  </Link>
+                </li>
+                <li>
+                  <Link href={listingHref(current.slug, { sort: "price_asc" })} className="rounded px-2 py-1 text-brand hover:underline">
+                    Lowest price first
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
         </div>

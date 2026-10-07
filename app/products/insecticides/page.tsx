@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
-// Legacy category URL — the marketplace listing now lives at /c/insecticides.
+// Legacy category URL — these products now live under /c/crop-protection/insecticides.
 export default function LegacyCategoryPage() {
-  redirect("/c/insecticides");
+  permanentRedirect("/c/crop-protection/insecticides");
 }

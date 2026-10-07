@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
-import { Check, ChevronDown, Search, Star } from "lucide-react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import { PRICE_PRESETS, listingHref, toggleValue } from "../../lib-shop/listing-url";
 import { formatPrice } from "../../lib-shop/format";
 
@@ -118,39 +118,49 @@ function PriceFilter({ state, facets, navigate }) {
   );
 }
 
-function IngredientFilter({ state, facets, navigate }) {
+/**
+ * Multi-select facet: selected values first, then the top `initial` options,
+ * a "N more" toggle and (when `searchable`) a search box over the full list.
+ * Options are { value, count } (value doubles as label) or
+ * { value, label, count }.
+ */
+function FacetList({ options, selected, onToggle, initial = 8, searchable = false, searchLabel, emptyText }) {
   const [term, setTerm] = useState("");
   const [expanded, setExpanded] = useState(false);
   const t = term.trim().toLowerCase();
-  const selected = facets.ais.filter((a) => state.ais.includes(a.value));
-  const missingSelected = state.ais.filter((v) => !facets.ais.some((a) => a.value === v)).map((value) => ({ value, count: 0 }));
-  const rest = facets.ais.filter((a) => !state.ais.includes(a.value) && (!t || a.value.toLowerCase().includes(t)));
-  const visible = t || expanded ? rest : rest.slice(0, 8);
+  const labelOf = (o) => o.label ?? o.value;
+  const picked = options.filter((o) => selected.includes(o.value));
+  const missing = selected.filter((v) => !options.some((o) => o.value === v)).map((value) => ({ value, count: 0 }));
+  const rest = options.filter((o) => !selected.includes(o.value) && (!t || labelOf(o).toLowerCase().includes(t)));
+  const visible = t || expanded ? rest : rest.slice(0, initial);
   return (
     <div>
-      <div className="relative mb-2">
-        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" strokeWidth={1.75} aria-hidden="true" />
-        <input
-          type="search"
-          value={term}
-          onChange={(e) => setTerm(e.target.value)}
-          placeholder={`Search ${facets.ais.length} ingredients`}
-          aria-label="Search active ingredients"
-          className="h-8 w-full rounded-md border border-line pl-8 pr-2 text-[13px] outline-none focus:border-brand"
-        />
-      </div>
+      {searchable && options.length > initial && (
+        <div className="relative mb-2">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" strokeWidth={1.75} aria-hidden="true" />
+          <input
+            type="search"
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+            placeholder={`Search ${options.length} ${searchLabel}`}
+            aria-label={`Search ${searchLabel}`}
+            className="h-8 w-full rounded-md border border-line pl-8 pr-2 text-[13px] outline-none focus:border-brand"
+          />
+        </div>
+      )}
       <div className="max-h-72 space-y-0.5 overflow-y-auto pr-1">
-        {[...selected, ...missingSelected].map((a) => (
-          <CheckRow key={a.value} checked label={a.value} count={a.count} onChange={() => navigate({ ais: toggleValue(state.ais, a.value) })} />
+        {[...picked, ...missing].map((o) => (
+          <CheckRow key={o.value} checked label={labelOf(o)} count={o.count} onChange={() => onToggle(o.value)} />
         ))}
-        {visible.map((a) => (
-          <CheckRow key={a.value} checked={false} label={a.value} count={a.count} onChange={() => navigate({ ais: toggleValue(state.ais, a.value) })} />
+        {visible.map((o) => (
+          <CheckRow key={o.value} checked={false} label={labelOf(o)} count={o.count} onChange={() => onToggle(o.value)} />
         ))}
-        {t && rest.length === 0 && <p className="px-1 py-1 text-xs text-ink-2">No ingredient matches “{term}”.</p>}
+        {t && rest.length === 0 && <p className="px-1 py-1 text-xs text-ink-2">No {searchLabel} match “{term}”.</p>}
+        {!t && options.length === 0 && emptyText && <p className="px-1 text-xs text-ink-2">{emptyText}</p>}
       </div>
-      {!t && rest.length > 8 && (
+      {!t && rest.length > initial && (
         <button type="button" onClick={() => setExpanded((e) => !e)} className="mt-1.5 px-1 text-[13px] font-semibold text-brand hover:underline">
-          {expanded ? "Show less" : `${rest.length - 8} more`}
+          {expanded ? "Show less" : `${rest.length - initial} more`}
         </button>
       )}
     </div>
@@ -160,8 +170,10 @@ function IngredientFilter({ state, facets, navigate }) {
 /**
  * Listing filters. Every change navigates to a new URL; the server renders the
  * filtered results. Used in the desktop sidebar and the mobile filter sheet.
+ *
+ * scope: "category" (/c/x), "subcategory" (/c/x/y) or "search" (/search).
  */
-export default function FilterSidebar({ basePath, state, facets, scope, total = 1, inSheet = false, onPendingChange }) {
+export default function FilterSidebar({ basePath, state, facets, scope, categorySlug, subcategorySlug, total = 1, inSheet = false, onPendingChange }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -174,8 +186,16 @@ export default function FilterSidebar({ basePath, state, facets, scope, total = 
   };
 
   const hasFilters =
-    state.min != null || state.max != null || state.rating || state.units.length || state.ais.length || state.inStock || (scope === "search" && state.category);
-  const clearHref = listingHref(basePath, { q: state.q, sort: state.sort, units: [], ais: [] });
+    state.min != null ||
+    state.max != null ||
+    state.subs.length ||
+    state.brands.length ||
+    state.crops.length ||
+    state.units.length ||
+    state.inStock ||
+    (scope === "search" && state.category);
+  const clearHref = listingHref(basePath, { q: state.q, sort: state.sort });
+  const onCategoryPages = scope === "category" || scope === "subcategory";
 
   return (
     <div className={`transition-opacity ${pending ? "opacity-60" : ""}`} aria-busy={pending}>
@@ -195,14 +215,14 @@ export default function FilterSidebar({ basePath, state, facets, scope, total = 
         <ul className="space-y-0.5">
           {scope === "search" && state.category && (
             <li>
-              <button type="button" onClick={() => navigate({ category: "" })} className="px-1 py-1 text-[13px] font-semibold text-brand hover:underline">
+              <button type="button" onClick={() => navigate({ category: "", subs: [] })} className="px-1 py-1 text-[13px] font-semibold text-brand hover:underline">
                 ‹ All categories
               </button>
             </li>
           )}
           {facets.categories.map((c) => {
-            const active = scope === "category" ? basePath === `/c/${c.slug}` : state.category === c.slug;
-            if (scope === "category") {
+            const active = onCategoryPages ? categorySlug === c.slug : state.category === c.slug;
+            if (onCategoryPages) {
               return (
                 <li key={c.slug}>
                   <Link
@@ -221,7 +241,7 @@ export default function FilterSidebar({ basePath, state, facets, scope, total = 
                   type="button"
                   disabled={!c.count && !active}
                   aria-pressed={active}
-                  onClick={() => navigate({ category: active ? "" : c.slug })}
+                  onClick={() => navigate({ category: active ? "" : c.slug, subs: [] })}
                   className={`flex w-full items-center justify-between rounded px-1 py-1 text-left text-[13px] hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-50 ${
                     active ? "font-semibold text-brand" : "text-ink"
                   }`}
@@ -235,6 +255,45 @@ export default function FilterSidebar({ basePath, state, facets, scope, total = 
         </ul>
       </Section>
 
+      {/* Subcategory: on /c/x/y the siblings are links (switch listing); elsewhere a multi-select. */}
+      {(scope !== "search" || state.category) && facets.subcategories.length > 0 && (
+        <Section title="Subcategory">
+          {scope === "subcategory" ? (
+            <ul className="max-h-72 space-y-0.5 overflow-y-auto pr-1">
+              <li>
+                <Link href={`/c/${categorySlug}`} className="block px-1 py-1 text-[13px] font-semibold text-brand hover:underline">
+                  ‹ All {facets.categories.find((c) => c.slug === categorySlug)?.name?.toLowerCase() ?? "products"}
+                </Link>
+              </li>
+              {facets.subcategories.map((s) => {
+                const active = s.slug === subcategorySlug;
+                return (
+                  <li key={s.slug}>
+                    <Link
+                      href={`/c/${categorySlug}/${s.slug}`}
+                      aria-current={active ? "page" : undefined}
+                      className={`flex items-center justify-between gap-2 rounded px-1 py-1 text-[13px] hover:bg-canvas ${active ? "font-semibold text-brand" : "text-ink"}`}
+                    >
+                      <span className="min-w-0 truncate">{s.name}</span>
+                      <span className="text-xs font-normal tabular-nums text-ink-3">{s.count}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <FacetList
+              options={facets.subcategories.map((s) => ({ value: s.slug, label: s.name, count: s.count }))}
+              selected={state.subs}
+              onToggle={(v) => navigate({ subs: toggleValue(state.subs, v) })}
+              initial={10}
+              searchable
+              searchLabel="subcategories"
+            />
+          )}
+        </Section>
+      )}
+
       {/* A price range is meaningless with zero matching products. */}
       {total > 0 && (
         <Section title="Price">
@@ -242,48 +301,41 @@ export default function FilterSidebar({ basePath, state, facets, scope, total = 
         </Section>
       )}
 
-      <Section title="Customer ratings">
-        <div className="space-y-0.5" role="radiogroup" aria-label="Customer ratings">
-          {facets.ratings.map((r) => {
-            const active = state.rating === r.value;
-            return (
-              <label key={r.value} className="flex cursor-pointer items-center gap-2.5 rounded px-1 py-1 text-[13px] hover:bg-canvas">
-                <input
-                  type="radio"
-                  name={`rating-${scope}`}
-                  checked={active}
-                  onChange={() => navigate({ rating: r.value })}
-                  onClick={() => active && navigate({ rating: null })}
-                  className="h-4 w-4 accent-[#0F7A3D]"
-                />
-                <span className="flex flex-1 items-center gap-1 text-ink">
-                  {r.value}
-                  <Star className="h-3.5 w-3.5 text-rating" fill="currentColor" strokeWidth={0} aria-hidden="true" />& above
-                </span>
-                <span className="text-xs tabular-nums text-ink-3">{r.count}</span>
-              </label>
-            );
-          })}
-        </div>
+      <Section title="Brand">
+        <FacetList
+          options={facets.brands}
+          selected={state.brands}
+          onToggle={(v) => navigate({ brands: toggleValue(state.brands, v) })}
+          initial={30}
+          searchable
+          searchLabel="brands"
+          emptyText="No brands for these filters."
+        />
       </Section>
+
+      {facets.crops.length > 0 && (
+        <Section title="Crop">
+          <FacetList
+            options={facets.crops}
+            selected={state.crops}
+            onToggle={(v) => navigate({ crops: toggleValue(state.crops, v) })}
+            initial={10}
+            searchable
+            searchLabel="crops"
+          />
+        </Section>
+      )}
 
       <Section title="Pack size">
-        <div className="space-y-0.5">
-          {facets.units.map((u) => (
-            <CheckRow
-              key={u.value}
-              checked={state.units.includes(u.value)}
-              label={u.value}
-              count={u.count}
-              onChange={() => navigate({ units: toggleValue(state.units, u.value) })}
-            />
-          ))}
-          {facets.units.length === 0 && <p className="px-1 text-xs text-ink-2">No pack sizes for these filters.</p>}
-        </div>
-      </Section>
-
-      <Section title="Active ingredient">
-        <IngredientFilter state={state} facets={facets} navigate={navigate} />
+        <FacetList
+          options={facets.units}
+          selected={state.units}
+          onToggle={(v) => navigate({ units: toggleValue(state.units, v) })}
+          initial={12}
+          searchable
+          searchLabel="pack sizes"
+          emptyText="No pack sizes for these filters."
+        />
       </Section>
 
       <Section title="Availability">

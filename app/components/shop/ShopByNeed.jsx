@@ -1,16 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { COMING_SOON } from "../../config/taxonomy";
 
-// "Shop by need" round tiles: live categories with illustrated scenes (insect
-// pest, weed, leaf disease, plant growth) and greyed "coming soon" verticals.
-function Tile({ src, muted = false, children }) {
+// "Shop by need" round tiles: the five live categories with illustrated
+// scenes (seed packet, insect pest, nutrient sack, farm tools, livestock).
+function Tile({ src }) {
   return (
-    <span
-      className={`relative block aspect-square w-full max-w-[112px] overflow-hidden rounded-full ring-1 ring-black/5 transition ${
-        muted ? "" : "group-hover:ring-2 group-hover:ring-brand"
-      }`}
-    >
+    <span className="relative block aspect-square w-full max-w-[112px] overflow-hidden rounded-full ring-1 ring-black/5 transition group-hover:ring-2 group-hover:ring-brand">
       {src && (
         <Image
           src={src}
@@ -18,10 +13,9 @@ function Tile({ src, muted = false, children }) {
           fill
           sizes="112px"
           unoptimized
-          className={`object-cover transition-transform duration-300 ${muted ? "opacity-70 grayscale-[65%]" : "group-hover:scale-105"}`}
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
       )}
-      {children}
     </span>
   );
 }
@@ -33,14 +27,14 @@ export default function ShopByNeed({ categories }) {
         <div>
           <p className="eyebrow">Shop by need</p>
           <h2 id="need-heading" className="font-display text-lg font-extrabold text-ink sm:text-xl">
-            What does your crop need today?
+            What does your farm need today?
           </h2>
         </div>
         <Link href="/products" className="hidden text-[13px] font-semibold text-brand hover:underline sm:inline">
           All categories
         </Link>
       </div>
-      <ul className="no-scrollbar -mx-3 mt-3 flex gap-1 overflow-x-auto px-3 sm:mx-0 sm:grid sm:grid-cols-4 sm:gap-3 sm:px-0 lg:grid-cols-8">
+      <ul className="no-scrollbar -mx-3 mt-3 flex gap-1 overflow-x-auto px-3 sm:mx-0 sm:grid sm:grid-cols-5 sm:gap-3 sm:px-0">
         {categories.map((c) => (
           <li key={c.slug} className="w-[92px] shrink-0 sm:w-auto">
             <Link href={`/c/${c.slug}`} className="group flex flex-col items-center gap-2 rounded-lg p-1.5 text-center">
@@ -48,24 +42,9 @@ export default function ShopByNeed({ categories }) {
               <span className="leading-tight">
                 <span className="block text-[13px] font-semibold text-ink group-hover:text-brand">{c.shortName}</span>
                 <span className="block text-[11px] text-ink-2">{c.need}</span>
+                <span className="mt-0.5 block text-[11px] tabular-nums text-ink-3">{c.count.toLocaleString("en-IN")} products</span>
               </span>
             </Link>
-          </li>
-        ))}
-        {COMING_SOON.map((c) => (
-          <li key={c.slug} className="w-[92px] shrink-0 sm:w-auto">
-            <div className="flex flex-col items-center gap-2 p-1.5 text-center">
-              <span className="relative block w-full max-w-[112px]">
-                <Tile src={c.illustration} muted />
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-earth ring-1 ring-line">
-                  Soon
-                </span>
-              </span>
-              <span className="leading-tight">
-                <span className="block text-[13px] font-semibold text-ink-2">{c.name}</span>
-                <span className="block text-[11px] text-ink-3">Coming soon</span>
-              </span>
-            </div>
           </li>
         ))}
       </ul>

@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
-// Legacy category URL — the marketplace listing now lives at /c/pgr-and-others.
+// Legacy category URL — these products now live under /c/crop-nutrition/growth-regulators.
 export default function LegacyCategoryPage() {
-  redirect("/c/pgr-and-others");
+  permanentRedirect("/c/crop-nutrition/growth-regulators");
 }

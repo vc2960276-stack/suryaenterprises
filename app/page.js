@@ -10,10 +10,12 @@ import RecentlyViewed from "./components/shop/RecentlyViewed";
 import ShopByNeed from "./components/shop/ShopByNeed";
 import TrustBar, { Medallion } from "./components/shop/TrustBar";
 import { SITE, telHref } from "./config/site";
+import { brandHref } from "./config/taxonomy";
 import {
   getCatalogStats,
   getHomeRails,
   getNavCategories,
+  getTopBrands,
 } from "./products/data/catalog.server";
 
 export const metadata = {
@@ -35,6 +37,7 @@ export default function HomePage() {
   const categories = getNavCategories();
   const stats = getCatalogStats();
   const rails = getHomeRails();
+  const brands = getTopBrands(14);
   const fmt = (n) => n.toLocaleString("en-IN");
   const count = (slug) => categories.find((c) => c.slug === slug)?.count ?? 0;
 
@@ -45,24 +48,24 @@ export default function HomePage() {
       image: "/assets/marketplace/hero-paddy-sunrise.svg",
       eyebrow: SITE.tagline,
       eyebrowShort: "Agri marketplace",
-      title: "Crop protection, direct from the manufacturer",
-      text: `${fmt(stats.total)} products across insecticides, herbicides, fungicides and plant growth regulators — ${fmt(stats.ingredients)} active ingredients in every pack size.`,
-      textShort: `${fmt(stats.total)} products · ${fmt(stats.ingredients)} active ingredients`,
+      title: "Every farm input, one marketplace",
+      text: `${fmt(stats.total)} listings from ${fmt(stats.brands)} brands across seeds, crop protection, crop nutrition, farm machinery and animal husbandry — every pack size, one checkout.`,
+      textShort: `${fmt(stats.total)} listings · ${fmt(stats.brands)} brands`,
       cta: "Shop all categories",
       href: "/products",
-      secondary: { label: "Insecticides", href: "/c/insecticides" },
+      secondary: { label: "Seeds", href: "/c/seeds" },
     },
     {
       id: "protect",
       image: "/assets/marketplace/hero-cotton-sprayer.svg",
-      eyebrow: `${fmt(count("insecticides"))} insecticides · ${fmt(count("fungicides"))} fungicides`,
-      eyebrowShort: "Pest & disease control",
-      title: "Stop pests and disease before they spread",
-      text: "Find the right molecule by active ingredient, compare pack sizes and order in minutes.",
-      textShort: "Shop by active ingredient and pack size.",
-      cta: "Shop insecticides",
-      href: "/c/insecticides",
-      secondary: { label: "Fungicides", href: "/c/fungicides" },
+      eyebrow: `${fmt(count("crop-protection"))} crop protection · ${fmt(count("crop-nutrition"))} crop nutrition`,
+      eyebrowShort: "Protect & nourish",
+      title: "Stop pests and disease, feed the crop",
+      text: "Insecticides, fungicides, herbicides, bio-controls and fertilisers from leading brands — filter by brand, crop and pack size.",
+      textShort: "Shop by brand, crop and pack size.",
+      cta: "Shop crop protection",
+      href: "/c/crop-protection",
+      secondary: { label: "Crop nutrition", href: "/c/crop-nutrition" },
     },
     {
       id: "bulk",
@@ -70,8 +73,8 @@ export default function HomePage() {
       eyebrow: "For agri-retailers & institutions",
       eyebrowShort: "Retailers & institutions",
       title: "Bulk & institutional buying",
-      text: "High-purity technical grades for institutional partners, with custom packaging on request.",
-      textShort: "Technical grades and custom packaging.",
+      text: "Volume supply and technical grades for institutional partners, with quotations on request.",
+      textShort: "Volume supply, quotes on request.",
       cta: "Explore institutional",
       href: "/products/institutional",
       secondary: { label: "Talk to us", href: "/contact" },
@@ -93,9 +96,34 @@ export default function HomePage() {
         {promotions.length > 0 && <PromoCarousel slides={promotions} />}
         <TrustBar />
 
-        <Rail id="featured" title="Featured products" eyebrow="Handpicked by Surya" items={rails.featured} />
-        <Rail id="top-rated" title="Top rated" eyebrow="Rated 4.5★ and above" href="/search?rating=4&sort=popularity" items={rails.topRated} />
-        <Rail id="under-500" title="Under ₹500" eyebrow="Small packs, big protection" href="/search?max=500&sort=popularity" items={rails.under500} />
+        <Rail id="featured" title="Featured products" eyebrow="One pick per brand across the most popular subcategories" items={rails.featured} />
+
+        {/* Shop by brand */}
+        <section aria-labelledby="brands-heading" className="rounded-lg border border-line bg-white px-3 py-3 sm:px-4">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="eyebrow">Shop by brand</p>
+              <h2 id="brands-heading" className="font-display text-lg font-extrabold text-ink sm:text-xl">
+                {fmt(stats.brands)} brands, genuine packs
+              </h2>
+            </div>
+            <Link href="/search" className="hidden shrink-0 text-[13px] font-semibold text-brand hover:underline sm:inline">
+              All products
+            </Link>
+          </div>
+          <ul className="mt-3 flex flex-wrap gap-1.5">
+            {brands.map((b) => (
+              <li key={b.name}>
+                <Link href={brandHref(b.name)} className="chip hover:border-brand hover:text-brand">
+                  {b.name}
+                  <span className="text-ink-3">{fmt(b.count)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <Rail id="under-500" title="Under ₹500" eyebrow="Small packs, every category" href="/search?max=500&sort=popularity" items={rails.under500} />
 
         {/* Bulk & institutional banner */}
         <section
@@ -129,7 +157,7 @@ export default function HomePage() {
         </section>
 
         {rails.perCategory.map((c) => (
-          <Rail key={c.slug} id={`best-${c.slug}`} title={`Best of ${c.name}`} eyebrow="Highest rated in category" href={`/c/${c.slug}?sort=popularity`} items={c.items} />
+          <Rail key={c.slug} id={`best-${c.slug}`} title={`Explore ${c.name.toLowerCase()}`} eyebrow="Featured first, one pick per product" href={`/c/${c.slug}`} items={c.items} />
         ))}
 
         {/* Why buy from Surya */}
@@ -143,7 +171,7 @@ export default function HomePage() {
             <div>
               <p className="eyebrow">Why buy from Surya</p>
               <h2 id="why-heading" className="font-display text-lg font-extrabold text-ink sm:text-xl">
-                Straight from the people who make it
+                A licensed marketplace for every farm input
               </h2>
             </div>
             <Link href="/aboutUs" className="hidden shrink-0 items-center gap-1 text-[13px] font-semibold text-brand hover:underline sm:inline-flex">
@@ -152,9 +180,9 @@ export default function HomePage() {
           </div>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { icon: "factory", title: "Manufacturer direct", text: "Every product is manufactured and supplied by Surya Enterprises — no middlemen between our plant and your farm." },
-              { icon: "shield", title: "Genuine products", text: "Each listing shows the active ingredient, formulation, pack size and SKU, so you know exactly what you are buying." },
-              { icon: "label", title: "Label-compliant guidance", text: "Use only as directed on the CIB&RC-approved label. Our helpline can point you to the right product by active ingredient." },
+              { icon: "shield", title: "Genuine products", text: "Genuine products from leading brands and Surya's own range — every listing names the brand, pack size and SKU, so you know exactly what you are buying." },
+              { icon: "label", title: "Licensed agro-inputs marketplace", text: "Surya Enterprises is licensed to sell agro-inputs. Crop-protection products ship in sealed packs; use only as directed on the CIB&RC-approved label." },
+              { icon: "factory", title: "Surya's own range", text: "Products made by Surya Enterprises are marked “Manufacturer direct” on their page; everything else is a genuine branded pack sold by Surya." },
               { icon: "truck", title: "Pan-India dispatch", text: SITE.delivery.dispatchClaim },
               { icon: "upi", title: "Secure UPI payments", text: "Pay with any UPI app through PayU. Your UPI PIN is never entered on this site and no card details are stored." },
               { icon: "building", title: "Bulk & institutional support", text: "Technical-grade products with listed purity for co-operatives, dealers and institutions — quotations on request." },

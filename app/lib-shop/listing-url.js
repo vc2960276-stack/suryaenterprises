@@ -1,15 +1,20 @@
-// Builds listing URLs (category + search pages) from normalized filter state.
-// Shared by server components (links) and client components (router.push).
+// Builds listing URLs (category, subcategory + search pages) from normalized
+// filter state. Shared by server components (links) and client components
+// (router.push).
+//
+// Query keys: q, category (search scope only), sub[], brand[], crop[], min,
+// max, unit[], stock, sort, page.
 
 export function listingSearchParams(state) {
   const sp = new URLSearchParams();
   if (state.q) sp.set("q", state.q);
   if (state.category) sp.set("category", state.category);
+  for (const s of state.subs ?? []) sp.append("sub", s);
+  for (const b of state.brands ?? []) sp.append("brand", b);
+  for (const c of state.crops ?? []) sp.append("crop", c);
   if (state.min != null) sp.set("min", String(state.min));
   if (state.max != null) sp.set("max", String(state.max));
-  if (state.rating) sp.set("rating", String(state.rating));
   for (const u of state.units ?? []) sp.append("unit", u);
-  for (const a of state.ais ?? []) sp.append("ai", a);
   if (state.inStock) sp.set("stock", "1");
   if (state.sort && state.sort !== "relevance") sp.set("sort", state.sort);
   if (state.page && state.page > 1) sp.set("page", String(state.page));

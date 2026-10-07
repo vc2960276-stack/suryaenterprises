@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useId, useRef, useState } from "react";
 import { ChevronDown, Search, X } from "lucide-react";
 import { formatPrice } from "../../lib-shop/format";
+import ProductImage from "./ProductImage";
 
 export const FOCUS_SEARCH_EVENT = "surya-focus-search";
 
@@ -174,7 +174,7 @@ function SearchBarInner({ categories, initialQuery = "", initialScope = "", vari
           }}
           onFocus={() => query.trim().length >= 2 && setOpen(true)}
           onKeyDown={onKeyDown}
-          placeholder={mobile ? "Search crop protection products" : "Search by product, active ingredient or pack size"}
+          placeholder={mobile ? "Search seeds, sprays, fertilisers, tools…" : "Search by product, brand, crop or pack size"}
           aria-label="Search products"
           role="combobox"
           aria-expanded={showList}
@@ -228,8 +228,8 @@ function SearchBarInner({ categories, initialQuery = "", initialScope = "", vari
               onMouseEnter={() => setActive(i)}
               className={`flex cursor-pointer items-center gap-3 px-3 py-2 ${active === i ? "bg-brand-tint" : ""}`}
             >
-              <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded border border-line bg-white">
-                <Image src={item.image} alt="" fill sizes="40px" className="object-contain" />
+              <span className="block h-10 w-10 shrink-0">
+                <ProductImage src={item.image} category={item.category} sizes="40px" frameClassName="h-full w-full rounded" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[14px] text-ink">{item.name}</span>

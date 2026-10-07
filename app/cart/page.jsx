@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, ShieldCheck, ShoppingCart, Trash2 } from "lucide-react";
 import Breadcrumbs from "../components/shop/Breadcrumbs";
 import EmptyState from "../components/shop/EmptyState";
+import ProductImage from "../components/shop/ProductImage";
 import QuantityStepper from "../components/shop/QuantityStepper";
 import StockBadge from "../components/shop/StockBadge";
 import { SITE } from "../config/site";
@@ -82,8 +82,8 @@ export default function CartPage() {
                 return (
                   <li key={p.sku} className="flex gap-3 border-b border-line px-4 py-4 last:border-0 sm:gap-5">
                     <div className="flex shrink-0 flex-col items-center gap-3">
-                      <Link href={`/p/${p.slug}`} tabIndex={-1} aria-hidden="true" className="relative block h-20 w-20 overflow-hidden rounded-md border border-line bg-white sm:h-28 sm:w-28">
-                        <Image src={p.image} alt="" fill sizes="112px" className="object-contain p-1" />
+                      <Link href={`/p/${p.slug}`} tabIndex={-1} aria-hidden="true" className="block h-20 w-20 sm:h-28 sm:w-28">
+                        <ProductImage src={p.image} category={p.category} sizes="112px" frameClassName="h-full w-full rounded-md" className="p-1" />
                       </Link>
                       <QuantityStepper
                         value={quantity}

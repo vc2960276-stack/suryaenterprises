@@ -6,6 +6,7 @@ import { useState } from "react";
 import { getProduct, formatINR } from "../products/data/products";
 import { ArrowLeft, ChevronDown, CircleCheckBig, Lock, Phone, ShieldCheck, ShoppingBag, Smartphone } from "lucide-react";
 import CheckoutHeader, { PaymentStatus } from "../components/shop/CheckoutHeader";
+import ProductImage from "../components/shop/ProductImage";
 import PaymentPartners from "../components/shop/PaymentPartners";
 import { SITE, telHref } from "../config/site";
 import { useCheckoutAccount } from "../lib-account/use-checkout-account";
@@ -592,7 +593,7 @@ export default function CheckoutPage() {
                         className="flex gap-3 py-3 text-sm"
                       >
                         <span className="relative block h-14 w-14 shrink-0 overflow-hidden rounded-md border border-line bg-white">
-                          <Image src={item.product.image} alt="" fill sizes="56px" className="object-contain p-1" />
+                          <ProductImage src={item.product.image} category={item.product.category} sizes="56px" frameClassName="h-full w-full" className="p-1" />
                         </span>
 
                         <span className="min-w-0 flex-1">
@@ -660,7 +661,7 @@ export default function CheckoutPage() {
                   </li>
                   <li className="flex gap-2">
                     <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" strokeWidth={1.75} aria-hidden="true" />
-                    Manufacturer direct — sold and shipped by Surya Enterprises.
+                    Genuine products from leading brands and Surya&apos;s own range — sold and shipped by Surya Enterprises.
                   </li>
                   <li className="flex gap-2">
                     <Phone className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" strokeWidth={1.75} aria-hidden="true" />

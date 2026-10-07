@@ -7,7 +7,7 @@ import { listingHref } from "../../lib-shop/listing-url";
 import BottomSheet from "./BottomSheet";
 import FilterSidebar from "./FilterSidebar";
 
-export default function MobileListingControls({ basePath, state, facets, scope, sorts, total, activeCount }) {
+export default function MobileListingControls({ basePath, state, facets, scope, categorySlug, subcategorySlug, sorts, total, activeCount }) {
   const [sheet, setSheet] = useState(null);
   const close = useCallback(() => setSheet(null), []);
   const sortLabel = sorts.find((s) => s.value === state.sort)?.label ?? "Relevance";
@@ -63,7 +63,16 @@ export default function MobileListingControls({ basePath, state, facets, scope, 
           </button>
         }
       >
-        <FilterSidebar basePath={basePath} state={state} facets={facets} scope={scope} total={total} inSheet />
+        <FilterSidebar
+          basePath={basePath}
+          state={state}
+          facets={facets}
+          scope={scope}
+          categorySlug={categorySlug}
+          subcategorySlug={subcategorySlug}
+          total={total}
+          inSheet
+        />
       </BottomSheet>
     </>
   );

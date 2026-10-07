@@ -149,7 +149,7 @@ const sections = [
           </p>
         </Faq>
         <Faq q="Are your products genuine?">
-          <p>Yes. Every product is manufactured and supplied by {SITE.name}; nothing is sourced from unknown resellers. Each pack carries its registration, batch number and expiry.</p>
+          <p>Yes. {SITE.name} is a licensed agro-inputs marketplace selling genuine products from leading brands and Surya&apos;s own range; nothing is sourced from unknown resellers. Products made by Surya are marked “Manufacturer direct” on their page. Each pack carries the manufacturer&apos;s registration, batch number and expiry where applicable.</p>
         </Faq>
         <Faq q="How should I store pesticides at home or on the farm?">
           <p>In the original, closed container; in a cool, dry, locked place; away from children, animals, food, feed and water. Details are in our <Link href="/product-safety-disclaimer">Product Safety Disclaimer</Link>.</p>

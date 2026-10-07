@@ -12,23 +12,40 @@ import SortBar from "./SortBar";
 
 const activeFilterCount = (s, scope) =>
   (s.min != null || s.max != null ? 1 : 0) +
-  (s.rating ? 1 : 0) +
+  s.subs.length +
+  s.brands.length +
+  s.crops.length +
   s.units.length +
-  s.ais.length +
   (s.inStock ? 1 : 0) +
   (scope === "search" && s.category ? 1 : 0);
 
 /**
- * Shared listing UI for /c/[category] and /search (server component).
+ * Shared listing UI for /c/[category], /c/[category]/[subcategory] and
+ * /search (server component).
  */
-export default function ListingView({ scope, basePath, title, subtitle, breadcrumbs, result, state, emptyActions, suggestions }) {
+export default function ListingView({
+  scope,
+  basePath,
+  categorySlug,
+  subcategorySlug,
+  title,
+  subtitle,
+  intro,
+  breadcrumbs,
+  result,
+  state,
+  emptyActions,
+  suggestions,
+  children,
+}) {
   const { items, total, page, pageCount, pageSize, facets } = result;
   const from = total ? (page - 1) * pageSize + 1 : 0;
   const to = Math.min(page * pageSize, total);
-  const sorts = scope === "category" ? SORTS.map((s) => (s.value === "relevance" ? { ...s, label: "Featured" } : s)) : SORTS;
+  const sorts = scope === "search" ? SORTS : SORTS.map((s) => (s.value === "relevance" ? { ...s, label: "Featured" } : s));
   const filtersActive = activeFilterCount(state, scope);
   // Nothing to refine when an unfiltered query has no results: hide filters/sort.
   const showFilters = total > 0 || filtersActive > 0;
+  const sidebarProps = { basePath, state, facets, scope, categorySlug, subcategorySlug, total };
 
   return (
     <main className="shell py-3">
@@ -36,7 +53,7 @@ export default function ListingView({ scope, basePath, title, subtitle, breadcru
       <div className={`grid gap-3 ${showFilters ? "lg:grid-cols-[264px_minmax(0,1fr)]" : ""}`}>
         {showFilters && (
           <aside className="hidden self-start lg:sticky lg:top-[calc(var(--header-h)+12px)] lg:block lg:max-h-[calc(100vh-var(--header-h)-24px)] lg:overflow-y-auto lg:rounded-lg lg:border lg:border-line lg:bg-white">
-            <FilterSidebar basePath={basePath} state={state} facets={facets} scope={scope} total={total} />
+            <FilterSidebar {...sidebarProps} />
           </aside>
         )}
 
@@ -58,9 +75,11 @@ export default function ListingView({ scope, basePath, title, subtitle, breadcru
                 )}
               </p>
             </div>
+            {intro && <p className="mt-1 max-w-3xl text-[13px] text-ink-2">{intro}</p>}
+            {children}
             {filtersActive > 0 && (
               <div className="mt-2">
-                <ActiveFilters basePath={basePath} state={state} scope={scope} />
+                <ActiveFilters basePath={basePath} state={state} scope={scope} facets={facets} />
               </div>
             )}
             <div className={`mt-2 border-t border-line pt-1 ${showFilters ? "hidden lg:block" : "hidden"}`}>
@@ -69,17 +88,7 @@ export default function ListingView({ scope, basePath, title, subtitle, breadcru
           </div>
           {/* Sibling of the results grid (not inside the header card) so it stays
               sticky under the measured header for the whole results column. */}
-          {showFilters && (
-            <MobileListingControls
-              basePath={basePath}
-              state={state}
-              facets={facets}
-              scope={scope}
-              sorts={sorts}
-              total={total}
-              activeCount={filtersActive}
-            />
-          )}
+          {showFilters && <MobileListingControls {...sidebarProps} sorts={sorts} activeCount={filtersActive} />}
 
           {items.length > 0 ? (
             <>
@@ -104,7 +113,7 @@ export default function ListingView({ scope, basePath, title, subtitle, breadcru
               {filtersActive ? (
                 <p>Try removing a filter or widening the price range.</p>
               ) : (
-                <p>Check the spelling, or search by active ingredient (e.g. “Imidacloprid”) or pack size (e.g. “1 L”).</p>
+                <p>Check the spelling, or search by brand (e.g. “Syngenta”), crop (e.g. “Tomato”) or product type (e.g. “Sprayer”).</p>
               )}
               {suggestions?.length > 0 && (
                 <div className="mt-4">

@@ -21,7 +21,7 @@ export const SITE = {
   shortLabel: "Agri Marketplace",
   tagline: "India's biggest agriculture marketplace",
   // One-line mission shown in the footer brand block.
-  mission: "Manufacturer-direct crop protection for farmers, agri-retailers and institutional buyers.",
+  mission: "Genuine agri-inputs from leading brands and Surya's own range — for farmers, agri-retailers and institutional buyers.",
   // Brand artwork supplied by the owner (public/assets/brand). `logo` is the
   // whitespace-trimmed copy used in the UI; the square favicon is app/icon.png.
   logo: "/assets/brand/surya-logo-wide.png",
@@ -97,8 +97,8 @@ export const SITE = {
   // Trust bar items (home page). `icon` is a key resolved in
   // components/shop/TrustBar.jsx. PLACEHOLDER — edit wording to match ops.
   trust: [
-    { icon: "factory", title: "Manufacturer direct", text: "Manufactured and supplied by Surya Enterprises" },
-    { icon: "shield", title: "Genuine products", text: "Sold by the brand itself" },
+    { icon: "shield", title: "Genuine products", text: "From leading brands and Surya's own range" },
+    { icon: "label", title: "Licensed agro-inputs marketplace", text: "Sealed packs, label-compliant guidance" },
     { icon: "upi", title: "Secure UPI payments", text: "UPI via PayU" },
     { icon: "phone", title: "Helpline", text: HELPLINE_HOURS },
   ],
@@ -135,7 +135,7 @@ export const SITE = {
 
   // Factual chips next to the certifications. `icon` keys: factory, upi, receipt, shield, phone.
   trustChips: [
-    { icon: "factory", text: "Manufacturer direct" },
+    { icon: "shield", text: "Licensed agro-inputs marketplace" },
     { icon: "upi", text: "Secure UPI via PayU" },
     { icon: "receipt", text: "GST invoice" },
   ],
@@ -146,16 +146,16 @@ export const SITE = {
   // -------------------------------------------------------------------------
   // Offers ticker (home page, under the header). Only enabled items render.
   // Keep items FACTUAL — they are shown to every visitor. To add a real sale:
-  //   { text: "Monsoon sale: 10% off all fungicides till 31 July", href: "/c/fungicides", icon: "tag", enabled: true },
+  //   { text: "Monsoon sale: 10% off all fungicides till 31 July", href: "/c/crop-protection/fungicides", icon: "tag", enabled: true },
   // `icon` keys: sprout, upi, building, tag, package, truck, phone.
   // -------------------------------------------------------------------------
   offersSiteWide: false, // true shows the ticker on every page, false = home only
   offers: [
-    { text: "Manufacturer-direct pricing on 10,000+ crop-protection products", href: "/products", icon: "sprout", enabled: true },
+    { text: "Genuine products from Syngenta, Namdhari Seeds, East West, Bayer, Dhanuka & more, alongside Surya's own range", href: "/products", icon: "sprout", enabled: true },
     { text: "Pay securely with UPI via PayU", href: "/payment-policy", icon: "upi", enabled: true },
     { text: "Bulk & institutional orders — request a quote", href: "/products/institutional", icon: "building", enabled: true },
     { text: "Shop products under ₹500", href: "/search?max=500&sort=popularity", icon: "tag", enabled: true },
-    { text: "Insecticides, herbicides, fungicides & PGRs in every pack size", href: "/products", icon: "package", enabled: true },
+    { text: "Seeds, crop protection, crop nutrition, farm machinery & animal husbandry — every pack size", href: "/products", icon: "package", enabled: true },
   ],
 
   // -------------------------------------------------------------------------
@@ -168,7 +168,7 @@ export const SITE = {
     {
       id: "under-500",
       title: "Under ₹500 picks",
-      subtitle: "Products priced under ₹500, sorted by rating.",
+      subtitle: "Products priced under ₹500 across every category.",
       cta: "Shop under ₹500",
       href: "/search?max=500&sort=popularity",
       theme: "harvest",
@@ -176,21 +176,21 @@ export const SITE = {
       enabled: true,
     },
     {
-      id: "top-fungicides",
-      title: "Top-rated fungicides",
-      subtitle: "Disease control, sorted by customer rating.",
-      cta: "Shop fungicides",
-      href: "/c/fungicides?sort=popularity",
+      id: "seeds",
+      title: "Seeds by crop",
+      subtitle: "Vegetable, fruit, flower and field seeds from established seed companies.",
+      cta: "Shop seeds",
+      href: "/c/seeds",
       theme: "green",
-      art: "disease",
+      art: "growth",
       enabled: true,
     },
     {
       id: "weed-control",
       title: "Weed control essentials",
-      subtitle: "Herbicides by active ingredient and pack size.",
+      subtitle: "Herbicides by brand and pack size.",
       cta: "Shop herbicides",
-      href: "/c/herbicides",
+      href: "/c/crop-protection/herbicides",
       theme: "earth",
       art: "weed",
       enabled: true,
@@ -208,11 +208,21 @@ export const SITE = {
     {
       id: "pest-control",
       title: "Insect & pest control",
-      subtitle: "Insecticides across every major active ingredient.",
+      subtitle: "Insecticides, bio-insecticides, traps and lures.",
       cta: "Shop insecticides",
-      href: "/c/insecticides",
+      href: "/c/crop-protection/insecticides",
       theme: "harvest",
       art: "pest",
+      enabled: true,
+    },
+    {
+      id: "machinery",
+      title: "Sprayers, tools & covers",
+      subtitle: "Knapsack sprayers, brush cutters, tarpaulins and mulches.",
+      cta: "Shop farm machinery",
+      href: "/c/farm-machinery",
+      theme: "earth",
+      art: "warehouse",
       enabled: true,
     },
   ],

@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { productHref } from "../../config/taxonomy";
 import AddToCartControl from "./AddToCartControl";
 import PriceTag from "./PriceTag";
+import ProductImage from "./ProductImage";
 import RatingBadge from "./RatingBadge";
 import StockBadge from "./StockBadge";
 import WishlistButton from "./WishlistButton";
@@ -19,26 +19,27 @@ export default function ProductCard({ product, priority = false, layout = "grid"
     >
       <WishlistButton sku={p.sku} name={p.name} className="absolute right-2 top-2 z-10" />
       <Link href={productHref(p.slug)} className="flex flex-1 flex-col focus-visible:outline-offset-4">
-        <div className="relative aspect-square w-full overflow-hidden rounded-md bg-white">
-          <Image
-            src={p.image}
-            alt=""
-            fill
-            sizes={rail ? "196px" : "(min-width: 1536px) 16vw, (min-width: 1280px) 20vw, (min-width: 640px) 30vw, 46vw"}
-            className="object-contain p-1 transition-transform duration-300 group-hover:scale-[1.03]"
-            preload={priority}
-          />
-        </div>
-        <h3 className="mt-2 line-clamp-2 min-h-10 text-[14px] font-medium leading-5 text-ink group-hover:text-brand">
+        <ProductImage
+          src={p.image}
+          category={p.category}
+          sizes={rail ? "196px" : "(min-width: 1536px) 16vw, (min-width: 1280px) 20vw, (min-width: 640px) 30vw, 46vw"}
+          preload={priority}
+          frameClassName="aspect-square w-full rounded-md"
+          className="p-1 transition-transform duration-300 group-hover:scale-[1.03]"
+        />
+        {p.brand && <p className="mt-2 truncate text-[11px] font-semibold uppercase tracking-wide text-ink-2">{p.brand}</p>}
+        <h3 className={`line-clamp-2 min-h-10 text-[14px] font-medium leading-5 text-ink group-hover:text-brand ${p.brand ? "mt-0.5" : "mt-2"}`}>
           {p.name}
         </h3>
         {/* Pack size is usually already in the name; don't announce it twice. */}
         <p className="mt-0.5 truncate text-xs text-ink-2" aria-hidden={p.unit && p.name.includes(p.unit) ? "true" : undefined}>
           {p.unit}
         </p>
-        <div className="mt-1.5 flex min-h-5 items-center gap-2">
-          <RatingBadge rating={p.rating} reviewsCount={p.reviewsCount} />
-        </div>
+        {p.rating != null && (
+          <div className="mt-1.5 flex min-h-5 items-center gap-2">
+            <RatingBadge rating={p.rating} reviewsCount={p.reviewsCount} />
+          </div>
+        )}
         <div className="mt-1.5">
           <PriceTag price={p.price} mrp={p.mrp} size="sm" />
         </div>

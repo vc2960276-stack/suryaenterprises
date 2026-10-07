@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="tank" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6B8CC0"/><stop offset=".4" stop-color="#4A6FA5"/><stop offset="1" stop-color="#34507C"/></linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E4E9E6"/><stop offset="1" stop-color="#9AA6A0"/></linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="#FFFFFF"/>
+  <circle cx="162" cy="146" r="122" fill="#FFF6D9"/>
+  <!-- earth ground -->
+  <path d="M20 262 Q160 240 300 262 V278 Q160 294 20 278Z" fill="#9A6538" opacity=".75"/>
+  <ellipse cx="160" cy="262" rx="96" ry="10" fill="#3B2614" opacity=".22"/>
+  <!-- shoulder straps -->
+  <path d="M120 80 C104 58 110 30 136 30 C150 30 154 48 150 64" stroke="#3B2614" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M200 80 C216 58 210 30 184 30 C170 30 166 48 170 64" stroke="#3B2614" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <!-- tank -->
+  <rect x="100" y="70" width="120" height="156" rx="26" fill="url(#tank)"/>
+  <rect x="112" y="84" width="14" height="118" rx="7" fill="#FFFFFF" opacity=".22"/>
+  <rect x="140" y="52" width="40" height="24" rx="6" fill="#14211A"/>
+  <rect x="146" y="46" width="28" height="10" rx="4" fill="#2E3A32"/>
+  <rect x="194" y="100" width="12" height="100" rx="6" fill="#DCE6F2" opacity=".85"/>
+  <path d="M196 120h8M196 140h8M196 160h8M196 180h8" stroke="#34507C" stroke-width="1.5"/>
+  <rect x="106" y="222" width="108" height="12" rx="6" fill="#14211A"/>
+  <!-- pump handle -->
+  <rect x="214" y="150" width="14" height="10" rx="3" fill="#2E3A32"/>
+  <path d="M226 155 L266 112" stroke="#6F7C75" stroke-width="7" stroke-linecap="round"/>
+  <rect x="262" y="96" width="12" height="28" rx="6" transform="rotate(43 268 110)" fill="#14211A"/>
+  <!-- hose + lance -->
+  <path d="M110 214 C86 236 58 232 56 206 C55 196 60 190 66 186" stroke="#14211A" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M62 162 L44 64" stroke="url(#steel)" stroke-width="7" stroke-linecap="round"/>
+  <rect x="58" y="156" width="16" height="32" rx="7" transform="rotate(-10 66 172)" fill="#14211A"/>
+  <path d="M56 170 L40 178" stroke="#14211A" stroke-width="4" stroke-linecap="round"/>
+  <rect x="38" y="40" width="10" height="18" rx="3" transform="rotate(-10 43 49)" fill="#6F7C75"/>
+  <circle cx="43" cy="60" r="6" fill="#2E3A32"/>
+  <!-- mist -->
+  <g fill="#4A6FA5" opacity=".5"><circle cx="30" cy="36" r="3.5"/><circle cx="18" cy="26" r="3"/><circle cx="40" cy="22" r="3"/><circle cx="12" cy="46" r="2.5"/><circle cx="26" cy="14" r="2.5"/><circle cx="52" cy="14" r="2"/><circle cx="8" cy="34" r="2"/></g>
+  <!-- brand ribbon -->
+  <rect x="16" y="286" width="92" height="18" rx="9" fill="#0F7A3D"/>
+  <text x="62" y="299" text-anchor="middle" font-family="Manrope, Inter, Arial, sans-serif" font-weight="800" font-size="10" fill="#FFFFFF" letter-spacing="1.5">SURYA</text>
+</svg>

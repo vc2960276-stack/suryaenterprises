@@ -5,7 +5,7 @@ import {
 import { COMPANY_PROFILE } from "../config/company-profile";
 import { POLICY_LINKS } from "../config/policy-links";
 import { SITE, mailHref, telHref, whatsappHref } from "../config/site";
-import { CATEGORIES, COMING_SOON } from "../config/taxonomy";
+import { CATEGORIES } from "../config/taxonomy";
 import BrandLogo from "./shop/BrandLogo";
 import FooterPartnersStrip from "./shop/FooterPartnersStrip";
 import FooterColumn from "./shop/FooterColumn";
@@ -14,6 +14,7 @@ import NewsletterForm from "./shop/NewsletterForm";
 const SHOP_LINKS = [
   ...CATEGORIES.map((c) => ({ name: c.name, href: `/c/${c.slug}` })),
   { name: "All categories", href: "/products" },
+  { name: "Bulk & institutional", href: "/products/institutional" },
   { name: "Under ₹500", href: "/search?max=500&sort=popularity" },
 ];
 
@@ -162,7 +163,7 @@ export default function Footer() {
               ) : null}
             </div>
 
-            <FooterColumn title="Shop" links={SHOP_LINKS} note={`Coming soon: ${COMING_SOON.map((c) => c.name).join(" · ")}`} />
+            <FooterColumn title="Shop" links={SHOP_LINKS} />
             <FooterColumn title="Customer service" links={SERVICE_LINKS} />
             <FooterColumn title="Company" links={COMPANY_LINKS} />
             <FooterColumn title="Policies" links={POLICY_LINKS} columns={2} />

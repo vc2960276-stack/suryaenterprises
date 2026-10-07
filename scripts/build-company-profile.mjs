@@ -78,23 +78,23 @@ const GAP = 18; // vertical rhythm between blocks
 const products = JSON.parse(await readFile(PRODUCTS, "utf8"));
 const prices = products.map((p) => p.price);
 const live = {
+  products: new Set(products.map((p) => p.family)).size,
   skus: products.length,
-  activeIngredients: new Set(products.map((p) => p.activeIngredient)).size,
+  brands: new Set(products.map((p) => p.brand)).size,
   priceMin: Math.min(...prices),
   priceMax: Math.max(...prices),
 };
-for (const key of Object.keys(live)) {
-  if (live[key] !== P.catalogue[key]) {
-    console.warn(`[company-profile] WARNING: catalogue.${key} is ${P.catalogue[key]} in company-profile.js but ${live[key]} in products.json`);
-  }
+const drift = Object.keys(live).filter((key) => live[key] !== P.catalogue[key]);
+for (const key of drift) {
+  console.warn(`[company-profile] WARNING: catalogue.${key} is ${P.catalogue[key]} in catalog-facts.js but ${live[key]} in products.json — re-run scripts/import-brand-catalog.mjs`);
 }
-const prefixes = new Set(products.map((p) => p.name.split(" - ")[0].trim().toLowerCase()));
-for (const line of P.productLines) {
-  for (const example of line.examples) {
-    if (!prefixes.has(example.toLowerCase())) {
-      console.warn(`[company-profile] WARNING: example product "${example}" (${line.name}) is not in products.json`);
-    }
-  }
+// Example product names: a record's name is "<product> - <pack size>".
+const prefixes = new Set(products.map((p) => p.name.slice(0, p.name.length - p.unit.length - 3).trim().toLowerCase()));
+const missingExamples = P.productLines.flatMap((line) => line.examples.filter((e) => !prefixes.has(e.toLowerCase())).map((e) => `${e} (${line.name})`));
+const brandSet = new Set(products.map((p) => p.brand.toLowerCase()));
+const missingBrands = P.catalogue.exampleBrands.filter((b) => !brandSet.has(b.toLowerCase()));
+if (missingExamples.length || missingBrands.length) {
+  throw new Error(`[company-profile] not in products.json — examples: ${missingExamples.join("; ") || "none"}; brands: ${missingBrands.join(", ") || "none"}`);
 }
 
 // ---------------------------------------------------------------------------

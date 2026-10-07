@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="eng" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD75E"/><stop offset="1" stop-color="#F5B800"/></linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E4E9E6"/><stop offset="1" stop-color="#9AA6A0"/></linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="#FFFFFF"/>
+  <circle cx="160" cy="150" r="122" fill="#E8F5EC"/>
+  <!-- grass -->
+  <path d="M20 268 Q160 252 300 268 V280 Q160 296 20 280Z" fill="#3FA75F" opacity=".5"/>
+  <g fill="#1F8A4C">
+    <path d="M150 268 C154 256 158 250 160 242 C164 252 166 260 166 268Z"/><path d="M190 270 C192 258 198 250 204 246 C204 256 200 264 196 270Z"/><path d="M230 266 C230 256 236 248 244 244 C242 254 238 262 232 266Z"/><path d="M256 270 C258 260 264 254 272 252 C270 262 266 268 260 270Z"/><path d="M130 270 C128 260 122 254 114 252 C116 262 120 268 126 270Z"/>
+  </g>
+  <ellipse cx="150" cy="268" rx="110" ry="10" fill="#14211A" opacity=".08"/>
+  <!-- blade -->
+  <circle cx="86" cy="240" r="34" fill="url(#steel)" stroke="#6F7C75" stroke-width="2"/>
+  <circle cx="86" cy="240" r="28" fill="none" stroke="#6F7C75" stroke-width="4" stroke-dasharray="7 6"/>
+  <!-- shaft -->
+  <path d="M212 108 L92 236" stroke="#6F7C75" stroke-width="12" stroke-linecap="round"/>
+  <path d="M209 105 L90 232" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity=".3"/>
+  <circle cx="86" cy="240" r="9" fill="#2E3A32"/><circle cx="86" cy="240" r="3.5" fill="#9AA6A0"/>
+  <!-- guard -->
+  <path d="M45 233 A42 42 0 0 1 107 204" stroke="#0F7A3D" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <!-- handlebar -->
+  <path d="M126 136 L190 196" stroke="#2E3A32" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="126" cy="136" r="8" fill="#14211A"/><circle cx="190" cy="196" r="8" fill="#14211A"/>
+  <rect x="180" y="178" width="12" height="22" rx="5" transform="rotate(-47 186 189)" fill="#B42318" opacity=".85"/>
+  <!-- engine -->
+  <rect x="200" y="108" width="52" height="22" rx="8" fill="#14211A"/>
+  <rect x="186" y="40" width="88" height="70" rx="16" fill="url(#eng)"/>
+  <rect x="196" y="50" width="12" height="50" rx="6" fill="#FFFFFF" opacity=".3"/>
+  <rect x="226" y="54" width="36" height="42" rx="8" fill="#2E3A32"/>
+  <g stroke="#6F7C75" stroke-width="2"><path d="M232 62h24M232 70h24M232 78h24M232 86h24"/></g>
+  <circle cx="206" cy="92" r="9" fill="#14211A"/><circle cx="206" cy="92" r="4" fill="#6F7C75"/>
+  <rect x="266" y="60" width="16" height="22" rx="4" fill="#6F7C75"/>
+  <!-- brand ribbon -->
+  <rect x="16" y="286" width="92" height="18" rx="9" fill="#0F7A3D"/>
+  <text x="62" y="299" text-anchor="middle" font-family="Manrope, Inter, Arial, sans-serif" font-weight="800" font-size="10" fill="#FFFFFF" letter-spacing="1.5">SURYA</text>
+</svg>

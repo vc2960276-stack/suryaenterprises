@@ -16,7 +16,7 @@ export const metadata = {
     template: `%s | ${SITE.name}`,
   },
   description:
-    "Shop insecticides, herbicides, fungicides and plant growth regulators direct from Surya Enterprises — India's agriculture marketplace for farmers, agri-retailers and institutional buyers.",
+    "Shop seeds, crop protection, crop nutrition, farm machinery and animal husbandry products from leading brands and Surya's own range — Surya Enterprises, a licensed agro-inputs marketplace for farmers, agri-retailers and institutional buyers.",
 };
 
 export const viewport = {

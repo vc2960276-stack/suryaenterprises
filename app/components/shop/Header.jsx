@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Heart, Menu, Phone, ShoppingCart, X, ChevronRight } from "lucide-react";
 import { SITE, telHref } from "../../config/site";
-import { COMING_SOON } from "../../config/taxonomy";
 import { cartCount, useCart, useCartHydrated } from "../../lib-shop/cart";
 import { useWishlist, useWishlistHydrated } from "../../lib-shop/wishlist";
 import CategoryMegaMenu from "./CategoryMegaMenu";
@@ -97,16 +96,6 @@ function MobileMenu({ open, onClose, categories }) {
             </Link>
           </li>
         </ul>
-        <div className="border-t-8 border-canvas px-4 py-3">
-          <p className="eyebrow">Coming soon</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {COMING_SOON.map((c) => (
-              <span key={c.slug} className="chip text-ink-2">
-                {c.name}
-              </span>
-            ))}
-          </div>
-        </div>
         <div className="border-t-8 border-canvas">
           <AccountDrawerLinks onClose={onClose} />
         </div>

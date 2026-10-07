@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="blu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6B8CC0"/><stop offset="1" stop-color="#4A6FA5"/></linearGradient>
+    <linearGradient id="grn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3FA75F"/><stop offset="1" stop-color="#1F8A4C"/></linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="#FFFFFF"/>
+  <circle cx="160" cy="160" r="122" fill="#E8F5EC"/>
+  <ellipse cx="160" cy="262" rx="120" ry="12" fill="#14211A" opacity=".1"/>
+  <!-- bottom fold (green underside) -->
+  <path d="M44 196 H276 L292 238 H28Z" fill="url(#grn)"/>
+  <path d="M28 238 H292 V250 H28Z" fill="#0F7A3D"/>
+  <path d="M44 196 H276" stroke="#FFFFFF" stroke-width="2" opacity=".25"/>
+  <g fill="#F2F5F2" stroke="#9AA6A0" stroke-width="3"><circle cx="60" cy="226" r="6"/><circle cx="100" cy="226" r="6"/><circle cx="140" cy="226" r="6"/><circle cx="180" cy="226" r="6"/><circle cx="220" cy="226" r="6"/><circle cx="260" cy="226" r="6"/></g>
+  <!-- middle fold (blue) -->
+  <path d="M58 152 H262 L274 198 H46Z" fill="url(#blu)"/>
+  <path d="M46 198 H274 V208 H46Z" fill="#34507C"/>
+  <path d="M58 152 H262" stroke="#FFFFFF" stroke-width="2" opacity=".3"/>
+  <g fill="#F2F5F2" stroke="#9AA6A0" stroke-width="3"><circle cx="74" cy="186" r="6"/><circle cx="117" cy="186" r="6"/><circle cx="160" cy="186" r="6"/><circle cx="203" cy="186" r="6"/><circle cx="246" cy="186" r="6"/></g>
+  <!-- top fold (lit blue) with corner turned back -->
+  <path d="M74 108 H246 L258 156 H62Z" fill="#7B9BCB"/>
+  <path d="M62 156 H258 V166 H62Z" fill="#4A6FA5"/>
+  <path d="M74 108 H246" stroke="#FFFFFF" stroke-width="2" opacity=".35"/>
+  <path d="M246 108 L258 156 H214Z" fill="#3FA75F"/>
+  <path d="M246 108 L214 156" stroke="#1F8A4C" stroke-width="1.5" opacity=".5"/>
+  <g fill="#F2F5F2" stroke="#9AA6A0" stroke-width="3"><circle cx="90" cy="142" r="6"/><circle cx="125" cy="142" r="6"/><circle cx="160" cy="142" r="6"/><circle cx="195" cy="142" r="6"/></g>
+  <path d="M90 120 H200" stroke="#FFFFFF" stroke-width="6" opacity=".12" stroke-linecap="round"/>
+  <!-- brand ribbon -->
+  <rect x="16" y="286" width="92" height="18" rx="9" fill="#0F7A3D"/>
+  <text x="62" y="299" text-anchor="middle" font-family="Manrope, Inter, Arial, sans-serif" font-weight="800" font-size="10" fill="#FFFFFF" letter-spacing="1.5">SURYA</text>
+</svg>

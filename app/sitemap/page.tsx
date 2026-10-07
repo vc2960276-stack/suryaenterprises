@@ -6,7 +6,8 @@ import PageHeader from "../components/shop/PageHeader";
 import { COMPANY_PROFILE } from "../config/company-profile";
 import { POLICY_LINKS } from "../config/policy-links";
 import { SITE } from "../config/site";
-import { CATEGORIES, COMING_SOON } from "../config/taxonomy";
+import { CATEGORIES } from "../config/taxonomy";
+import { getSubcategories } from "../products/data/catalog.server";
 
 // `download` links point at a static file (plain anchor), not a route.
 type SitemapLink = { name: string; href: string; desc?: string; soon?: boolean; download?: boolean };
@@ -20,10 +21,16 @@ const groups: SitemapGroup[] = [
     links: [
       { name: "Home", href: "/", desc: "Marketplace home — highlights, shop by need, rails" },
       { name: "All categories", href: "/products", desc: "Every live category with counts and top picks" },
-      ...CATEGORIES.map((c) => ({ name: c.name, href: `/c/${c.slug}`, desc: c.description })),
+      ...CATEGORIES.flatMap((c) => {
+        const subs = getSubcategories(c.slug);
+        return [
+          { name: c.name, href: `/c/${c.slug}`, desc: c.description },
+          ...subs.slice(0, 6).map((s) => ({ name: `${c.name} › ${s.name}`, href: `/c/${c.slug}/${s.slug}`, desc: `${s.count.toLocaleString("en-IN")} listings` })),
+          ...(subs.length > 6 ? [{ name: `${c.name} › all ${subs.length} subcategories`, href: `/c/${c.slug}`, desc: "Use the Subcategory filter on the category page" }] : []),
+        ];
+      }),
       { name: "Bulk & institutional", href: "/products/institutional", desc: "Technical-grade products with listed purity; quotes on request" },
-      { name: "Search", href: "/search", desc: "Search by product name, active ingredient or pack size" },
-      ...COMING_SOON.map((c) => ({ name: c.name, href: "/products", desc: "Coming soon", soon: true })),
+      { name: "Search", href: "/search", desc: "Search by product name, brand, crop or pack size" },
     ],
   },
   {

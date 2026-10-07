@@ -1,10 +1,16 @@
 // Server-only catalogue access for marketplace pages (home, listing, search,
-// product detail, search suggestions). The full ~6 MB catalogue never reaches
+// product detail, search suggestions). The full ~11 MB catalogue never reaches
 // the browser: pages read from here and pass only the rendered page of results
 // (as plain "card" objects) to client components.
+//
+// Data model (app/products/data/products.json, one record per pack size):
+//   category (level-1, see config/taxonomy.js) > subcategory (level-2, from
+//   the data) ; brand ; crop (seeds) ; family = product-level key shared by
+//   the pack sizes of one product.
 import "server-only";
 import productsData from "./products.json";
-import { CATEGORIES, categoryByData, categoryBySlug } from "../../config/taxonomy";
+import { CATEGORIES, categoryByData, categoryBySlug, slugify } from "../../config/taxonomy";
+import { getReference } from "./reference-overlay.server";
 
 export const PAGE_SIZE = 24;
 
@@ -20,7 +26,7 @@ const normalize = (value) =>
 
 const tokenize = (value) => normalize(value).split(" ").filter(Boolean);
 
-const UNIT_FACTORS = { ml: 1, l: 1000, g: 1, gm: 1, kg: 1000 };
+const UNIT_FACTORS = { ml: 1, l: 1000, ltr: 1000, g: 1, gm: 1, gms: 1, kg: 1000, kgs: 1000, seeds: 1, unit: 1, m: 1 };
 
 // "100 ml" -> 100, "5 L" -> 5000 (for sorting pack sizes small -> large).
 export function packSizeValue(unit) {
@@ -33,21 +39,49 @@ const records = productsData.map((product, order) => ({
   product,
   order,
   categorySlug: categoryByData[product.category]?.slug ?? null,
+  subcategorySlug: slugify(product.subcategory),
   nameTokens: tokenize(product.name),
   nameText: normalize(product.name),
-  aiText: normalize(product.activeIngredient),
+  brandText: normalize(product.brand),
+  metaText: normalize([product.subcategory, product.crop, product.productType, product.category].filter(Boolean).join(" ")),
   descText: normalize(product.description),
 }));
 
 const bySlug = new Map(records.map((r) => [r.product.slug, r]));
 const bySku = new Map(records.map((r) => [r.product.sku, r]));
+const byCategory = new Map(CATEGORIES.map((c) => [c.slug, []]));
+const byFamily = new Map();
+for (const r of records) {
+  if (r.categorySlug) byCategory.get(r.categorySlug).push(r);
+  const fam = byFamily.get(r.product.family) ?? [];
+  fam.push(r);
+  byFamily.set(r.product.family, fam);
+}
+
+// categorySlug -> [{ slug, name, count }] sorted by count desc.
+const subcategoriesByCategory = new Map();
+for (const c of CATEGORIES) {
+  const counts = new Map();
+  for (const r of byCategory.get(c.slug)) {
+    const entry = counts.get(r.subcategorySlug) ?? { slug: r.subcategorySlug, name: r.product.subcategory, count: 0 };
+    entry.count += 1;
+    counts.set(r.subcategorySlug, entry);
+  }
+  subcategoriesByCategory.set(
+    c.slug,
+    [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+  );
+}
+
+const sortDesc = (map) => [...map.entries()].sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0])));
 
 // ---------------------------------------------------------------------------
 // Shapes sent to the browser
 // ---------------------------------------------------------------------------
 
-// The minimal props a ProductCard needs. Optional owner-supplied fields are
-// passed through only when present so they render automatically later.
+// The minimal props a ProductCard needs. In development, when the local
+// reference overlay is present, the card shows the reference image instead
+// of the placeholder (never in production — see reference-overlay.server.js).
 export function toCard(product) {
   const card = {
     sku: product.sku,
@@ -58,11 +92,15 @@ export function toCard(product) {
     unit: product.unit,
     stock: product.stock,
     category: product.category,
-    activeIngredient: product.activeIngredient,
+    subcategory: product.subcategory,
+    brand: product.brand,
+    isOwnBrand: Boolean(product.isOwnBrand),
     rating: product.rating ?? null,
   };
   if (product.mrp) card.mrp = product.mrp;
   if (product.reviewsCount) card.reviewsCount = product.reviewsCount;
+  const ref = getReference(product.sku);
+  if (ref?.images[0]) card.image = ref.images[0];
   return card;
 }
 
@@ -78,17 +116,30 @@ export function getProductBySkuServer(sku) {
   return bySku.get(sku)?.product ?? null;
 }
 
-export function getCategoryProducts(slug) {
-  return records.filter((r) => r.categorySlug === slug);
+// Development-only reference copy for a product (null in production).
+export function getProductReference(product) {
+  return getReference(product.sku);
 }
 
-// Pick up to `limit` records, at most one per active ingredient, so rails
-// don't fill up with five pack sizes of the same product.
-function distinctByIngredient(list, limit) {
+export function getCategoryProducts(slug) {
+  return byCategory.get(slug) ?? [];
+}
+
+export function getSubcategories(categorySlug) {
+  return subcategoriesByCategory.get(categorySlug) ?? [];
+}
+
+export function getSubcategory(categorySlug, subcategorySlug) {
+  return getSubcategories(categorySlug).find((s) => s.slug === subcategorySlug) ?? null;
+}
+
+// Pick up to `limit` records, at most one per product family, so rails don't
+// fill up with five pack sizes of the same product.
+function distinctByFamily(list, limit) {
   const seen = new Set();
   const out = [];
   for (const r of list) {
-    const key = r.product.activeIngredient;
+    const key = r.product.family;
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(r);
@@ -97,8 +148,10 @@ function distinctByIngredient(list, limit) {
   return out;
 }
 
-const byRatingDesc = (a, b) =>
-  (b.product.rating ?? 0) - (a.product.rating ?? 0) || a.order - b.order;
+// "Popularity": featured first, then by name (no ratings exist yet).
+const featuredRank = (r) => (r.product.isFeatured ? 0 : 1);
+const byPopularity = (a, b) =>
+  featuredRank(a) - featuredRank(b) || a.product.name.localeCompare(b.product.name) || a.order - b.order;
 
 // Small deterministic hash so "Customers also viewed" is stable per product.
 function hash(str) {
@@ -116,25 +169,18 @@ function hash(str) {
 
 let navCache = null;
 
-// Category strip + mega menu: counts, popular active ingredients, pack sizes.
+// Category strip + mega menu: counts, top subcategories, brands, pack sizes.
 export function getNavCategories() {
   if (navCache) return navCache;
   navCache = CATEGORIES.map((category) => {
     const list = getCategoryProducts(category.slug);
-    const aiCounts = new Map();
+    const brandCounts = new Map();
     const unitCounts = new Map();
     for (const r of list) {
-      aiCounts.set(r.product.activeIngredient, (aiCounts.get(r.product.activeIngredient) ?? 0) + 1);
+      brandCounts.set(r.product.brand, (brandCounts.get(r.product.brand) ?? 0) + 1);
       unitCounts.set(r.product.unit, (unitCounts.get(r.product.unit) ?? 0) + 1);
     }
-    const topIngredients = [...aiCounts.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([value, count]) => ({ value, count }));
-    const packSizes = [...unitCounts.entries()]
-      .sort((a, b) => packSizeValue(a[0]) - packSizeValue(b[0]))
-      .map(([value, count]) => ({ value, count }));
-    const top = [...list].sort(byRatingDesc)[0]?.product;
+    const subcategories = getSubcategories(category.slug);
     return {
       slug: category.slug,
       name: category.name,
@@ -143,60 +189,65 @@ export function getNavCategories() {
       icon: category.icon,
       tint: category.tint,
       description: category.description,
-      count: list.length,
-      image: top?.image ?? null,
       illustration: category.illustration ?? null,
-      topIngredients,
-      packSizes,
+      count: list.length,
+      subcategoryCount: subcategories.length,
+      subcategories: subcategories.slice(0, 10),
+      brandCount: brandCounts.size,
+      topBrands: sortDesc(brandCounts)
+        .slice(0, 8)
+        .map(([value, count]) => ({ value, count })),
+      packSizes: sortDesc(unitCounts)
+        .slice(0, 10)
+        .sort((a, b) => packSizeValue(a[0]) - packSizeValue(b[0]))
+        .map(([value, count]) => ({ value, count })),
     };
   });
   return navCache;
 }
 
 export function getCatalogStats() {
-  return { total: records.length, ingredients: new Set(records.map((r) => r.product.activeIngredient)).size };
+  return {
+    total: records.length,
+    products: byFamily.size,
+    brands: new Set(records.map((r) => r.product.brand)).size,
+    subcategories: [...subcategoriesByCategory.values()].reduce((n, list) => n + list.length, 0),
+  };
+}
+
+// Top brands across the catalogue (by number of listings).
+export function getTopBrands(limit = 12) {
+  const counts = new Map();
+  for (const r of records) counts.set(r.product.brand, (counts.get(r.product.brand) ?? 0) + 1);
+  return sortDesc(counts)
+    .slice(0, limit)
+    .map(([name, count]) => ({ name, count }));
 }
 
 export function getHomeRails() {
-  const featured = distinctByIngredient(
-    records.filter((r) => r.product.isFeatured).sort(byRatingDesc),
+  const featured = distinctByFamily(
+    records.filter((r) => r.product.isFeatured).sort(byPopularity),
     16
   );
-  const topRated = distinctByIngredient(
-    records.filter((r) => (r.product.rating ?? 0) >= 4.5).sort(byRatingDesc),
-    16
-  );
-  const under500 = distinctByIngredient(
-    records.filter((r) => r.product.price < 500).sort(byRatingDesc),
+  const under500 = distinctByFamily(
+    records.filter((r) => r.product.price < 500).sort(byPopularity),
     16
   );
   const perCategory = CATEGORIES.map((category) => ({
     slug: category.slug,
     name: category.name,
-    items: distinctByIngredient(getCategoryProducts(category.slug).sort(byRatingDesc), 14).map((r) =>
-      toCard(r.product)
-    ),
+    items: distinctByFamily([...getCategoryProducts(category.slug)].sort(byPopularity), 14).map((r) => toCard(r.product)),
   }));
   return {
     featured: featured.map((r) => toCard(r.product)),
-    topRated: topRated.map((r) => toCard(r.product)),
     under500: under500.map((r) => toCard(r.product)),
     perCategory,
   };
 }
 
-// A few real product images per category for hero / landing collages.
-export function getCategoryShowcase(slug, limit = 4) {
-  return distinctByIngredient(getCategoryProducts(slug).sort(byRatingDesc), limit).map((r) =>
-    toCard(r.product)
-  );
-}
-
 export function getTopPicks(limit = 12) {
   const perCat = Math.ceil(limit / CATEGORIES.length);
-  return CATEGORIES.flatMap((c) =>
-    distinctByIngredient(getCategoryProducts(c.slug).sort(byRatingDesc), perCat)
-  )
+  return CATEGORIES.flatMap((c) => distinctByFamily([...getCategoryProducts(c.slug)].sort(byPopularity), perCat))
     .slice(0, limit)
     .map((r) => toCard(r.product));
 }
@@ -205,40 +256,34 @@ export function getTopPicks(limit = 12) {
 // Product detail helpers
 // ---------------------------------------------------------------------------
 
-// Other pack sizes of the same active ingredient (one per unit).
+// Other pack sizes of the same product (one per unit).
 export function getPackVariants(product) {
   const seen = new Set();
-  return records
-    .filter((r) => r.product.activeIngredient === product.activeIngredient && r.product.category === product.category)
-    .sort((a, b) => {
-      const aSelf = a.product.slug === product.slug ? -1 : 0;
-      const bSelf = b.product.slug === product.slug ? -1 : 0;
-      return aSelf - bSelf || a.order - b.order;
-    })
+  return (byFamily.get(product.family) ?? [])
     .filter((r) => {
       if (seen.has(r.product.unit)) return false;
       seen.add(r.product.unit);
       return true;
     })
-    .sort((a, b) => packSizeValue(a.product.unit) - packSizeValue(b.product.unit))
+    .sort((a, b) => packSizeValue(a.product.unit) - packSizeValue(b.product.unit) || a.order - b.order)
     .map((r) => ({ slug: r.product.slug, unit: r.product.unit, price: r.product.price, stock: r.product.stock }));
 }
 
 export function getSimilarProducts(product, limit = 14) {
   const same = records.filter(
-    (r) => r.product.category === product.category && r.product.activeIngredient !== product.activeIngredient
+    (r) => r.product.category === product.category && r.product.subcategory === product.subcategory && r.product.family !== product.family
   );
-  return distinctByIngredient(same.sort(byRatingDesc), limit).map((r) => toCard(r.product));
+  return distinctByFamily(same.sort(byPopularity), limit).map((r) => toCard(r.product));
 }
 
 export function getAlsoViewed(product, limit = 14) {
   const seed = product.sku;
   const pool = records
-    .filter((r) => r.product.category === product.category && r.product.activeIngredient !== product.activeIngredient)
+    .filter((r) => r.product.category === product.category && r.product.family !== product.family)
     .map((r) => ({ r, k: hash(`${seed}:${r.product.sku}`) }))
     .sort((a, b) => a.k - b.k)
     .map((x) => x.r);
-  return distinctByIngredient(pool, limit).map((r) => toCard(r.product));
+  return distinctByFamily(pool, limit).map((r) => toCard(r.product));
 }
 
 // ---------------------------------------------------------------------------
@@ -253,8 +298,12 @@ export const SORTS = [
   { value: "newest", label: "Newest First" },
 ];
 
+const MAX_VALUES = 24;
 const asArray = (value) =>
-  (Array.isArray(value) ? value : value == null ? [] : [value]).map(String).filter(Boolean);
+  (Array.isArray(value) ? value : value == null ? [] : [value])
+    .map((v) => String(v).slice(0, 120))
+    .filter(Boolean)
+    .slice(0, MAX_VALUES);
 
 const asNumber = (value) => {
   if (value == null || value === "") return null;
@@ -266,16 +315,16 @@ const first = (value) => (Array.isArray(value) ? value[0] : value) ?? "";
 
 export function parseListingParams(sp = {}) {
   const sort = String(first(sp.sort));
-  const rating = asNumber(sp.rating);
   const page = Math.max(1, Math.floor(asNumber(sp.page) ?? 1));
   return {
     q: String(first(sp.q)).trim().slice(0, 120),
     category: String(first(sp.category)),
+    subs: asArray(sp.sub),
+    brands: asArray(sp.brand),
+    crops: asArray(sp.crop),
     min: asNumber(sp.min),
     max: asNumber(sp.max),
-    rating: rating === 3 || rating === 4 ? rating : null,
     units: asArray(sp.unit),
-    ais: asArray(sp.ai),
     inStock: first(sp.stock) === "1",
     sort: SORTS.some((s) => s.value === sort) ? sort : "relevance",
     page,
@@ -287,12 +336,14 @@ function scoreRecord(record, tokens, phrase) {
   for (const token of tokens) {
     if (record.nameTokens.includes(token)) score += 4;
     else if (record.nameTokens.some((t) => t.startsWith(token))) score += 3;
-    else if (record.aiText.includes(token)) score += 2;
+    else if (record.brandText.includes(token)) score += 3;
+    else if (record.metaText.includes(token)) score += 2;
     else if (record.descText.includes(token)) score += 1;
     else return 0; // every token must match somewhere
   }
   if (phrase && record.nameText.includes(phrase)) score += 5;
   if (phrase && record.nameText.startsWith(phrase)) score += 3;
+  if (phrase && record.brandText === phrase) score += 4;
   return score;
 }
 
@@ -312,13 +363,14 @@ export function searchRecords(query, pool = records) {
 function passes(record, f, skip) {
   const p = record.product;
   if (skip !== "category" && f.category && record.categorySlug !== f.category) return false;
+  if (skip !== "sub" && f.subs.length && !f.subs.includes(record.subcategorySlug)) return false;
+  if (skip !== "brand" && f.brands.length && !f.brands.includes(p.brand)) return false;
+  if (skip !== "crop" && f.crops.length && !f.crops.includes(p.crop)) return false;
   if (skip !== "price") {
     if (f.min != null && p.price < f.min) return false;
     if (f.max != null && p.price > f.max) return false;
   }
-  if (skip !== "rating" && f.rating != null && (p.rating ?? 0) < f.rating) return false;
   if (skip !== "unit" && f.units.length && !f.units.includes(p.unit)) return false;
-  if (skip !== "ai" && f.ais.length && !f.ais.includes(p.activeIngredient)) return false;
   if (skip !== "stock" && f.inStock && !(p.stock > 0)) return false;
   return true;
 }
@@ -328,7 +380,7 @@ function countBy(list, f, skip, key) {
   for (const { record } of list) {
     if (!passes(record, f, skip)) continue;
     const k = key(record);
-    if (k == null) continue;
+    if (k == null || k === "") continue;
     counts.set(k, (counts.get(k) ?? 0) + 1);
   }
   return counts;
@@ -336,35 +388,36 @@ function countBy(list, f, skip, key) {
 
 /**
  * Run a listing query.
- * @param {{ scope: "category" | "search", categorySlug?: string, params: ReturnType<typeof parseListingParams> }} input
+ * @param {{ scope: "category" | "subcategory" | "search", categorySlug?: string, subcategorySlug?: string,
+ *           params: ReturnType<typeof parseListingParams> }} input
  */
-export function queryListing({ scope, categorySlug, params }) {
+export function queryListing({ scope, categorySlug, subcategorySlug, params }) {
   const filters = { ...params };
-  if (scope === "category") filters.category = categorySlug;
+  if (scope === "category" || scope === "subcategory") filters.category = categorySlug;
+  if (scope === "subcategory") filters.subs = [subcategorySlug];
   if (filters.category && !categoryBySlug[filters.category]) filters.category = "";
 
   const base = scope === "search" ? searchRecords(params.q) : searchRecords("", getCategoryProducts(categorySlug));
 
   // Facets: each facet is counted with every *other* filter applied.
   const categoryCounts = countBy(base, filters, "category", (r) => r.categorySlug);
+  const subCounts = countBy(base, filters, "sub", (r) => r.subcategorySlug);
+  const subNames = new Map();
+  for (const { record } of base) subNames.set(record.subcategorySlug, record.product.subcategory);
+  const brandCounts = countBy(base, filters, "brand", (r) => r.product.brand);
+  const cropCounts = countBy(base, filters, "crop", (r) => r.product.crop);
   const unitCounts = countBy(base, filters, "unit", (r) => r.product.unit);
-  const aiCounts = countBy(base, filters, "ai", (r) => r.product.activeIngredient);
-  const ratingPool = base.filter(({ record }) => passes(record, filters, "rating"));
   const pricePool = base.filter(({ record }) => passes(record, filters, "price"));
   const prices = (pricePool.length ? pricePool : base).map(({ record }) => record.product.price);
 
   const facets = {
     categories: CATEGORIES.map((c) => ({ slug: c.slug, name: c.name, count: categoryCounts.get(c.slug) ?? 0 })),
-    units: [...unitCounts.entries()]
-      .sort((a, b) => packSizeValue(a[0]) - packSizeValue(b[0]))
+    subcategories: sortDesc(subCounts).map(([slug, count]) => ({ slug, name: subNames.get(slug) ?? slug, count })),
+    brands: sortDesc(brandCounts).map(([value, count]) => ({ value, count })),
+    crops: sortDesc(cropCounts).map(([value, count]) => ({ value, count })),
+    units: sortDesc(unitCounts)
+      .sort((a, b) => b[1] - a[1] || packSizeValue(a[0]) - packSizeValue(b[0]))
       .map(([value, count]) => ({ value, count })),
-    ais: [...aiCounts.entries()]
-      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-      .map(([value, count]) => ({ value, count })),
-    ratings: [4, 3].map((value) => ({
-      value,
-      count: ratingPool.filter(({ record }) => (record.product.rating ?? 0) >= value).length,
-    })),
     priceMin: prices.length ? Math.min(...prices) : 0,
     priceMax: prices.length ? Math.max(...prices) : 0,
   };
@@ -372,18 +425,15 @@ export function queryListing({ scope, categorySlug, params }) {
   const matched = base.filter(({ record }) => passes(record, filters));
 
   const sorters = {
-    relevance: (a, b) => b.score - a.score || byRatingDesc(a.record, b.record),
-    popularity: (a, b) => byRatingDesc(a.record, b.record),
+    relevance: (a, b) => b.score - a.score || byPopularity(a.record, b.record),
+    popularity: (a, b) => byPopularity(a.record, b.record),
     price_asc: (a, b) => a.record.product.price - b.record.product.price || a.record.order - b.record.order,
     price_desc: (a, b) => b.record.product.price - a.record.product.price || a.record.order - b.record.order,
-    // Catalogue order is append-only, so later entries are the newest.
-    newest: (a, b) => b.record.order - a.record.order,
+    newest: (a, b) =>
+      String(b.record.product.createdAt).localeCompare(String(a.record.product.createdAt)) || b.record.order - a.record.order,
   };
-  // For category pages without a query, "relevance" keeps catalogue order.
-  const sorter =
-    params.sort === "relevance" && scope === "category"
-      ? (a, b) => a.record.order - b.record.order
-      : sorters[params.sort];
+  // Category pages without a query: "relevance" (labelled "Featured") = popularity.
+  const sorter = params.sort === "relevance" && scope !== "search" ? sorters.popularity : sorters[params.sort];
   matched.sort(sorter);
 
   const total = matched.length;
@@ -401,14 +451,13 @@ export function suggest(query, categorySlug) {
   const q = String(query ?? "").trim();
   if (q.length < 2) return [];
   const pool = categorySlug && categoryBySlug[categorySlug] ? getCategoryProducts(categorySlug) : records;
-  return searchRecords(q, pool)
-    .sort((a, b) => b.score - a.score || byRatingDesc(a.record, b.record))
-    .slice(0, 8)
-    .map(({ record: { product } }) => ({
-      name: product.name,
-      slug: product.slug,
-      price: product.price,
-      image: product.image,
-      category: product.category,
-    }));
+  return distinctByFamily(
+    searchRecords(q, pool)
+      .sort((a, b) => b.score - a.score || byPopularity(a.record, b.record))
+      .map(({ record }) => record),
+    8
+  ).map(({ product }) => {
+    const card = toCard(product);
+    return { name: card.name, slug: card.slug, price: card.price, image: card.image, category: card.category, brand: card.brand };
+  });
 }

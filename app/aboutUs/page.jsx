@@ -10,7 +10,7 @@ import { SITE, mailHref, telHref } from "../config/site";
 export const metadata = {
   title: "About us",
   description:
-    "Surya Enterprises is India's agriculture marketplace — a licensed, manufacturer-direct channel selling crop-protection products, seeds, equipment and crop nutrients to farmers and institutions, built from inside the supply chain in 2023.",
+    "Surya Enterprises is India's agriculture marketplace — a licensed agri-inputs marketplace selling seeds, crop protection, crop nutrition, farm machinery and animal husbandry products from leading brands alongside Surya's own crop-protection range, built from inside the supply chain in 2023.",
 };
 
 const fmt = (n) => n.toLocaleString("en-IN");
@@ -78,7 +78,6 @@ function Chain({ steps, labels = [], dark = false, ariaLabel }) {
 
 export default function AboutPage() {
   const onlineLines = P.productLines.filter((l) => l.online);
-  const offlineLines = P.productLines.filter((l) => !l.online);
   const [b2c, b2b] = P.segments;
   const store = SITE.offices[0];
 
@@ -94,7 +93,7 @@ export default function AboutPage() {
         aside={<BrandLogo variant="wide" width={230} tile href={null} />}
       >
         <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="At a glance">
-          {[...P.coverChips, `${fmt(P.catalogue.skus)} products online`].map((chip, i) => (
+          {[...P.coverChips, `${fmt(P.catalogue.products)} products online`].map((chip, i) => (
             <li
               key={chip}
               className="rise rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[12px] font-semibold text-white"
@@ -230,12 +229,12 @@ export default function AboutPage() {
             <SectionTitle
               id="sell-heading"
               eyebrow="What we sell"
-              title="Crop protection and nutrients online today; seeds, equipment and inputs through the store"
+              title="Seeds, crop protection, crop nutrition, farm machinery and animal husbandry — online and in-store"
             />
             <dl className="grid shrink-0 grid-cols-3 divide-x divide-line rounded-lg border border-line bg-canvas">
               {[
-                { value: fmt(P.catalogue.skus), label: "products online" },
-                { value: fmt(P.catalogue.activeIngredients), label: "active ingredients" },
+                { value: fmt(P.catalogue.products), label: "products online" },
+                { value: fmt(P.catalogue.brands), label: "brands" },
                 { value: priceRange("₹"), label: "per pack" },
               ].map((s) => (
                 <div key={s.label} className="px-3 py-2.5 sm:px-4">
@@ -283,17 +282,9 @@ export default function AboutPage() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="font-display text-[15px] font-extrabold text-ink">Through our store and institutional desk</h3>
               <span className="inline-flex items-center rounded-full bg-harvest-tint px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-earth">
-                Coming online in phases
+                {P.availability.offline.badge}
               </span>
             </div>
-            <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              {offlineLines.map((line) => (
-                <li key={line.name} className="flex items-center gap-3 rounded-md bg-white/80 px-3 py-2.5 ring-1 ring-line">
-                  <Medallion icon={line.icon} />
-                  <span className="font-display text-[14px] font-extrabold leading-tight text-ink">{line.name}</span>
-                </li>
-              ))}
-            </ul>
             <p className="mt-3 text-[12.5px] text-ink-2">
               {P.availability.offline.note}{" "}
               <Link href="/products/institutional" className="font-semibold text-brand hover:underline">

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="yl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD75E"/><stop offset="1" stop-color="#F5B800"/></linearGradient>
+    <linearGradient id="grn" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#57B66F"/><stop offset=".4" stop-color="#3FA75F"/><stop offset="1" stop-color="#0F7A3D"/></linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="#FFFFFF"/>
+  <circle cx="160" cy="150" r="122" fill="#FFF6D9"/>
+  <ellipse cx="160" cy="262" rx="100" ry="11" fill="#14211A" opacity=".08"/>
+  <!-- branch -->
+  <path d="M30 54 C90 40 150 64 210 50 C240 44 266 46 294 40" stroke="#7A4E2D" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M254 46 C250 30 262 20 278 22 C276 36 268 46 254 46Z" fill="#3FA75F"/>
+  <path d="M70 48 C62 34 70 22 86 20 C88 34 82 46 70 48Z" fill="#3FA75F"/>
+  <!-- sticky trap sheet -->
+  <path d="M110 50 V90" stroke="#3B2614" stroke-width="2"/>
+  <rect x="62" y="78" width="96" height="150" rx="6" fill="url(#yl)"/>
+  <circle cx="110" cy="90" r="4" fill="#FFF6D9" stroke="#D99A00" stroke-width="1.5"/>
+  <g stroke="#D99A00" stroke-width="1" opacity=".45"><path d="M62 108h96M62 138h96M62 168h96M62 198h96M94 78v150M126 78v150"/></g>
+  <g fill="#14211A" opacity=".75"><ellipse cx="84" cy="120" rx="3" ry="2"/><ellipse cx="118" cy="150" rx="2.6" ry="1.8"/><ellipse cx="140" cy="112" rx="2.4" ry="1.6"/><ellipse cx="100" cy="188" rx="3" ry="2"/><ellipse cx="136" cy="206" rx="2.6" ry="1.8"/><ellipse cx="76" cy="160" rx="2.2" ry="1.5"/><ellipse cx="146" cy="178" rx="2.2" ry="1.5"/></g>
+  <rect x="70" y="86" width="10" height="130" rx="5" fill="#FFFFFF" opacity=".25"/>
+  <!-- pheromone bucket trap -->
+  <path d="M234 50 V96" stroke="#3B2614" stroke-width="2"/>
+  <rect x="226" y="94" width="16" height="14" rx="5" fill="#FFFFFF" stroke="#CBD3CC" stroke-width="1.5"/>
+  <rect x="204" y="124" width="60" height="110" rx="10" fill="url(#grn)"/>
+  <ellipse cx="234" cy="128" rx="30" ry="6" fill="#0B6331"/>
+  <rect x="198" y="106" width="72" height="22" rx="11" fill="#FFC72C"/>
+  <rect x="206" y="110" width="20" height="5" rx="2.5" fill="#FFFFFF" opacity=".4"/>
+  <g fill="#14211A" opacity=".55"><rect x="212" y="146" width="12" height="16" rx="4"/><rect x="246" y="146" width="12" height="16" rx="4"/></g>
+  <rect x="210" y="138" width="8" height="84" rx="4" fill="#FFFFFF" opacity=".2"/>
+  <!-- moths -->
+  <g fill="#7A4E2D">
+    <path d="M186 84 l-7 -4 v8z M186 84 l7 -4 v8z"/><path d="M270 150 l-6 -3.5 v7z M270 150 l6 -3.5 v7z"/><path d="M182 236 l-6 -3.5 v7z M182 236 l6 -3.5 v7z"/>
+  </g>
+  <!-- brand ribbon -->
+  <rect x="16" y="286" width="92" height="18" rx="9" fill="#0F7A3D"/>
+  <text x="62" y="299" text-anchor="middle" font-family="Manrope, Inter, Arial, sans-serif" font-weight="800" font-size="10" fill="#FFFFFF" letter-spacing="1.5">SURYA</text>
+</svg>
