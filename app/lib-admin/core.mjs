@@ -81,6 +81,13 @@ export function purchasedItems(order) {
   return Array.isArray(order.items) && order.items.length > 0 && order.items.every(i => typeof i.sku === "string" && Number.isInteger(i.quantity) && i.quantity > 0 && Number.isFinite(i.price) && i.price > 0);
 }
 
+export function shipmentReference(body) {
+  if (typeof body.carrier !== "string" || typeof body.trackingId !== "string") throw new AdminError("A carrier and tracking number are required.", 422);
+  const carrier = body.carrier.trim(), trackingId = body.trackingId.trim();
+  if (!carrier || !trackingId || carrier.length > 100 || trackingId.length > 120) throw new AdminError("Enter a valid carrier and tracking number.", 422);
+  return { carrier, trackingId };
+}
+
 export function fulfillmentUpdate(current, body, now = new Date()) {
   if (!Number.isInteger(body.revision) || body.revision < 0) throw new AdminError("Reload this order before making changes.");
   const note = String(body.note || "").trim();
@@ -91,12 +98,41 @@ export function fulfillmentUpdate(current, body, now = new Date()) {
     if (notes.length > 2000) throw new AdminError("Notes are limited to 2,000 characters.");
     return { set: { notes }, event: { ...event, note: notes } };
   }
+  if (body.action === "customer-address") {
+    const input = body.address;
+    if (!input || typeof input !== "object" || Array.isArray(input)) throw new AdminError("Enter the customer's complete delivery address.", 422);
+    const address = {};
+    for (const [field, max] of [["address", 300], ["city", 100], ["state", 100], ["pinCode", 6]]) {
+      if (typeof input[field] !== "string" || !input[field].trim() || input[field].trim().length > max) throw new AdminError("Enter the customer's complete delivery address.", 422);
+      address[field] = input[field].trim();
+    }
+    if (!/^[1-9]\d{5}$/.test(address.pinCode)) throw new AdminError("Enter a valid six-digit Indian PIN code.", 422);
+    const previousAddress = Object.fromEntries(Object.keys(address).map(field => [field, current.customer?.[field] || ""]));
+    if (Object.keys(address).every(field => address[field] === previousAddress[field])) throw new AdminError("The delivery address has not changed.", 422);
+    return { set: { customerAddress: address }, event: { ...event, action: "customer_address_updated", previousAddress, address,
+      note: note || "Admin updated the customer delivery address." } };
+  }
   if (body.action === "confirm-product") {
     if (current.assignment === "purchased") throw new AdminError("This order already has purchased line items.", 422);
     if (typeof body.sku !== "string" || !body.sku.trim()) throw new AdminError("Select a catalog product.", 422);
     if (!["unassigned", "processing"].includes(current.fulfillmentStatus)) throw new AdminError("Product assignment cannot change after packing starts.", 422);
     return { set: { productSku: body.sku, productConfirmedAt: now, fulfillmentStatus: "processing" },
       event: { ...event, to: "processing", sku: body.sku, note: note || "Admin confirmed catalog association; original payment data preserved." } };
+  }
+  if (body.action === "correct-status") {
+    if (current.assignment === "approximate") throw new AdminError("Confirm the purchased product before correcting fulfillment.", 422);
+    if (!["processing", "packed", "on_hold", "cancelled", "returned"].includes(body.status) || body.status === current.fulfillmentStatus) throw new AdminError("Choose a different valid correction status.", 422);
+    if (!note) throw new AdminError("A reason is required for a manual status correction.", 422);
+    if (body.status === "returned" && !current.shipment?.shippedAt) throw new AdminError("A recorded shipment is required before marking a return.", 422);
+    const previousShipment = { ...(current.shipment || {}) };
+    const shipment = ["processing", "packed"].includes(body.status) ? {} : previousShipment;
+    return { set: { fulfillmentStatus: body.status, shipment }, event: { ...event, action: "status_correction", to: body.status, previousShipment } };
+  }
+  if (body.action === "record-shipment") {
+    if (current.assignment === "approximate") throw new AdminError("Confirm the purchased product before recording shipment.", 422);
+    if (!["processing", "packed"].includes(current.fulfillmentStatus)) throw new AdminError("Only processing or packed orders can be bulk shipped.", 422);
+    const shipment = { ...shipmentReference(body), shippedAt: now };
+    return { set: { fulfillmentStatus: "shipped", shipment }, event: { ...event, action: "shipment_recorded", to: "shipped", shipment, note: note || "Admin recorded a bulk shipment." } };
   }
   if (body.action !== "fulfillment" || !STAGES.includes(body.status) || !(NEXT_STAGES[current.fulfillmentStatus] || []).includes(body.status)) {
     throw new AdminError("This fulfillment transition is not allowed.", 422);

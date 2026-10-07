@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { AdminError, STAGES, buildProductMatcher, csvCell, fulfillmentUpdate, indiaDate, purchasedItems } from "./core.mjs";
+import { AdminError, STAGES, buildProductMatcher, csvCell, fulfillmentUpdate, indiaDate, purchasedItems, shipmentReference } from "./core.mjs";
 
 const { ObjectId } = mongoose.Types;
 
@@ -44,6 +44,7 @@ export function createOrdersStore(db, gatewayDb, products, { now = () => new Dat
     const assignment = purchased ? "purchased" : ops?.productConfirmedAt ? "confirmed" : "approximate";
     const selected = ops?.productSnapshot || matcher.match(order.subtotal, order.transactionId || order.orderId, ops?.productSku);
     const customer = order.customer || {};
+    const delivery = ops?.customerAddress || {};
     const paidAt = order.paidAt || order.__paidAt || order.updatedAt || order.createdAt;
     const row = {
       id: String(order._id), orderId: order.orderId, externalOrderId: gateway?.orderId || null,
@@ -52,7 +53,8 @@ export function createOrdersStore(db, gatewayDb, products, { now = () => new Dat
       dateBasis: order.paidAt ? "payment_confirmed" : "record_updated", providerPaidAt: iso(gateway?.paidAt),
       source: gateway ? "gateway" : "storefront", gatewayStatus: gateway?.status || null, callbackStatus: gateway?.callbackStatus || null,
       customer: { name: [customer.firstName, customer.lastName].filter(Boolean).join(" ") || "Customer", email: customer.email || "", phone: customer.phone || "",
-        address: [customer.address, customer.apartment].filter(Boolean).join(", "), city: customer.city || "", state: customer.state || "", pinCode: customer.pinCode || "" },
+        address: delivery.address ?? [customer.address, customer.apartment].filter(Boolean).join(", "),
+        city: delivery.city ?? customer.city ?? "", state: delivery.state ?? customer.state ?? "", pinCode: delivery.pinCode ?? customer.pinCode ?? "" },
       assignment, catalogMatch: purchased ? null : selected,
       items: purchased ? order.items.map(i => ({ sku: i.sku, name: i.name, quantity: i.quantity, price: i.price, image: matcher.bySku.get(i.sku)?.image || null })) : [],
       fulfillmentStatus: ops?.fulfillmentStatus || (purchased ? "processing" : "unassigned"), shipment: ops?.shipment || {},
@@ -146,5 +148,91 @@ export function createOrdersStore(db, gatewayDb, products, { now = () => new Dat
       r.customer.name, r.customer.email, r.customer.phone, r.assignment, r.catalogMatch?.sku || r.items.map(i => i.sku).join("; "),
       r.catalogMatch?.name || r.items.map(i => i.name).join("; "), r.catalogMatch?.price ?? "", r.catalogMatch?.delta ?? "", r.fulfillmentStatus, r.shipment.carrier, r.shipment.trackingId].map(csvCell).join(","))].join("\r\n");
   };
-  return { dashboard, detail, update, exportCsv };
+  const shipmentPreview = async filters => {
+    const eligible = { $and: ["$__assigned", { $in: ["$__stage", ["processing", "packed"]] }] };
+    const results = await orders.aggregate([...(await pipeline(filters)),
+      { $set: { __assigned: { $or: ["$__purchased", { $ne: [{ $ifNull: ["$__ops.productConfirmedAt", null] }, null] }] } } },
+      { $facet: {
+        totals: [{ $group: { _id: null, matchedCount: { $sum: 1 }, eligibleCount: { $sum: { $cond: [eligible, 1, 0] } },
+          unconfirmedCount: { $sum: { $cond: ["$__assigned", 0, 1] } },
+          alreadyShippedCount: { $sum: { $cond: [{ $and: ["$__assigned", { $eq: ["$__stage", "shipped"] }] }, 1, 0] } } } }],
+        candidates: [{ $match: { $expr: eligible } }, { $sort: { __paidAt: -1, _id: -1 } }, { $limit: 100 },
+          { $project: { _id: 1, revision: { $ifNull: ["$__ops.revision", 0] } } }],
+      } }], { maxTimeMS: 12000 }).toArray();
+    const data = results[0], totals = data.totals[0] || { matchedCount: 0, eligibleCount: 0, unconfirmedCount: 0, alreadyShippedCount: 0 };
+    return { ...totals, otherStageCount: totals.matchedCount - totals.eligibleCount - totals.unconfirmedCount - totals.alreadyShippedCount,
+      candidates: data.candidates.map(row => ({ id: String(row._id), revision: row.revision })),
+      capped: totals.eligibleCount > 100, maxBatch: 100, periodLabel: filters.label };
+  };
+  const bulkShip = async body => {
+    if (!Array.isArray(body.orders) || body.orders.length < 1 || body.orders.length > 100) throw new AdminError("Preview and select 1–100 confirmed purchase orders.", 422);
+    const reference = shipmentReference(body), note = String(body.note || "").trim();
+    if (note.length > 1000) throw new AdminError("The shipment note is limited to 1,000 characters.");
+    const ids = new Set();
+    for (const row of body.orders) {
+      idFor(row?.id);
+      if (!Number.isInteger(row.revision) || row.revision < 0 || ids.has(row.id)) throw new AdminError("Reload the shipment preview before submitting.", 422);
+      ids.add(row.id);
+    }
+    const results = new Array(body.orders.length);
+    let cursor = 0;
+    const alreadyRecorded = current => current.fulfillmentStatus === "shipped" && current.shipment.carrier === reference.carrier && current.shipment.trackingId === reference.trackingId;
+    const worker = async () => {
+      while (cursor < body.orders.length) {
+        const index = cursor++, target = body.orders[index];
+        try {
+          const current = await detail(target.id);
+          if (alreadyRecorded(current)) { results[index] = { id: target.id, status: "already_recorded" }; continue; }
+          await update(target.id, { revision: target.revision, action: "record-shipment", ...reference, note });
+          results[index] = { id: target.id, status: "shipped" };
+        } catch (error) {
+          if (error instanceof AdminError && error.status === 409) {
+            const latest = await detail(target.id).catch(() => null);
+            if (latest && alreadyRecorded(latest)) { results[index] = { id: target.id, status: "already_recorded" }; continue; }
+          }
+          results[index] = { id: target.id, status: "failed", error: error instanceof AdminError ? error.message : "Unable to update this order. Retry after refreshing." };
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(6, body.orders.length) }, worker));
+    return { shippedCount: results.filter(row => row.status === "shipped").length,
+      alreadyRecordedCount: results.filter(row => row.status === "already_recorded").length,
+      failedCount: results.filter(row => row.status === "failed").length, results };
+  };
+  const confirmReviewedAssociations = async (filters, { ownerReportedManualReview, note, dryRun = false } = {}) => {
+    if (ownerReportedManualReview !== true || typeof note !== "string" || !note.trim() || note.length > 1000) throw new AdminError("Record the owner's manual-review statement before bulk confirmation.", 422);
+    const candidates = await orders.aggregate([...(await pipeline(filters)),
+      { $match: { $expr: { $and: [{ $eq: ["$__purchased", false] }, { $eq: [{ $ifNull: ["$__ops.productConfirmedAt", null] }, null] },
+        { $in: ["$__stage", ["unassigned", "processing"]] }] } } }, { $limit: 10001 },
+      { $project: { _id: 1, orderId: 1, transactionId: 1, subtotal: 1, __stage: 1, revision: { $ifNull: ["$__ops.revision", 0] }, hasOperations: { $ne: [{ $ifNull: ["$__ops._id", null] }, null] } } }],
+    { maxTimeMS: 15000 }).toArray();
+    if (candidates.length > 10000) throw new AdminError("Narrow the review period to at most 10,000 records.");
+    if (dryRun === true) return { dryRun: true, candidateCount: candidates.length, amountINR: candidates.reduce((sum, row) => sum + Math.round(row.subtotal * 100), 0) / 100, targetStatus: "processing", confirmationSource: "owner_reported_review" };
+    let confirmedCount = 0, conflictCount = 0, missingProductCount = 0;
+    for (let offset = 0; offset < candidates.length; offset += 100) {
+      const writes = [];
+      for (const row of candidates.slice(offset, offset + 100)) {
+        const productSnapshot = matcher.match(row.subtotal, row.transactionId || row.orderId);
+        if (!productSnapshot) { missingProductCount++; continue; }
+        const at = now(), id = String(row._id);
+        writes.push({ updateOne: { filter: { _id: id, revision: row.revision }, upsert: !row.hasOperations,
+          update: { $set: { productSku: productSnapshot.sku, productSnapshot, productConfirmedAt: at,
+            productConfirmationSource: "owner_reported_review", fulfillmentStatus: "processing", updatedAt: at },
+          $setOnInsert: { orderId: row.orderId, createdAt: at }, $inc: { revision: 1 },
+          $push: { history: { at, action: "owner_review_confirmation", from: row.__stage, to: "processing", sku: productSnapshot.sku,
+            note: note.trim(), source: "owner_reported_review" } } } } });
+      }
+      if (!writes.length) continue;
+      let result;
+      try { result = await operations.bulkWrite(writes, { ordered: false }); }
+      catch (error) {
+        if (!error.result || !error.writeErrors?.every(entry => entry.code === 11000)) throw error;
+        result = error.result;
+      }
+      const changed = result.modifiedCount + result.upsertedCount;
+      confirmedCount += changed; conflictCount += writes.length - changed;
+    }
+    return { candidateCount: candidates.length, confirmedCount, conflictCount, missingProductCount };
+  };
+  return { dashboard, detail, update, exportCsv, shipmentPreview, bulkShip, confirmReviewedAssociations };
 }

@@ -42,6 +42,18 @@ test("CSV exports neutralize user-controlled spreadsheet formulas", () => {
   assert.equal(csvCell("+919123456789"), '"\'+919123456789"');
   assert.equal(csvCell("normal,name"), '"normal,name"');
 });
+test("manual corrections require a reason and preserve earlier shipment evidence", () => {
+  const current = { assignment: "confirmed", fulfillmentStatus: "shipped", shipment: { carrier: "DTDC", trackingId: "fixture-tracking", shippedAt: new Date("2026-10-07T12:00:00Z") } };
+  assert.throws(() => fulfillmentUpdate(current, { revision: 1, action: "correct-status", status: "processing" }), /reason/);
+  const correction = fulfillmentUpdate(current, { revision: 1, action: "correct-status", status: "processing", note: "Courier returned parcel; prepare again" });
+  assert.equal(correction.set.fulfillmentStatus, "processing"); assert.deepEqual(correction.set.shipment, {});
+  assert.deepEqual(correction.event.previousShipment, current.shipment); assert.equal(correction.event.from, "shipped");
+  const cancelled = fulfillmentUpdate(current, { revision: 1, action: "correct-status", status: "cancelled", note: "Customer cancelled after return" });
+  assert.equal(cancelled.set.fulfillmentStatus, "cancelled"); assert.deepEqual(cancelled.set.shipment, current.shipment);
+  assert.throws(() => fulfillmentUpdate({ assignment: "approximate", fulfillmentStatus: "unassigned" }, { revision: 0, action: "correct-status", status: "processing", note: "Not a purchase" }), /Confirm/);
+  assert.throws(() => fulfillmentUpdate({ assignment: "purchased", fulfillmentStatus: "processing", shipment: {} }, { revision: 0, action: "correct-status", status: "returned", note: "No shipping record" }), /recorded shipment/);
+  assert.throws(() => fulfillmentUpdate({ assignment: "approximate", fulfillmentStatus: "unassigned" }, { revision: 0, action: "record-shipment", carrier: "DTDC", trackingId: "fixture-tracking" }), /Confirm/);
+});
 test("storefront prices, quantities, SKUs and address are validated before a provider request", () => {
   const body = { amount: 800, items: [{ sku: "A", quantity: 2, price: 1, name: "Spoofed" }], shipping: { address: "Real street", city: "Delhi", state: "Delhi", pinCode: "110001" } };
   const purchase = prepareStorefrontPurchase(body, catalog);
