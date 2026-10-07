@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/build-product-index.mjs && npm run build:profile",
+    "predev": "npm run check:catalog-media && node scripts/build-product-index.mjs && npm run build:profile",
     "dev": "next dev",
     "dev:reference": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-reference-overlay.mjs && node scripts/build-product-index.mjs --with-reference && npm run build:profile && next dev",
     "import:catalog": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/import-brand-catalog.mjs",
-    "prebuild": "node scripts/build-product-index.mjs && npm run build:profile",
+    "build:catalog-media": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-catalog-media.mjs",
+    "check:catalog-media": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-catalog-media.mjs --check",
+    "prebuild": "npm run check:catalog-media && node scripts/build-product-index.mjs && npm run build:profile",
     "build:profile": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-company-profile.mjs",
     "build": "next build",
     "start": "next start",
@@ -31,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
     "pdfkit": "^0.20.2",
+    "sharp": "0.35.5",
     "tailwindcss": "^4"
   },
   "engines": {

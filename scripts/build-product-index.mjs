@@ -15,17 +15,21 @@
 // localhost. It refuses to run with NODE_ENV=production.
 //
 // Also a CI-style guard: the committed catalogue may contain ONLY our own
-// factual text and placeholder imagery. The build fails if products.json (or
-// the clean index) carries any source-site string, any development
+// factual text and local imagery. The build fails if products.json (or
+// the production index) carries any source-site string, any development
 // reference-image path or an image outside /assets.
 import { existsSync, readFileSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { withCatalogMedia, validateCatalogMedia } from "../app/products/data/catalog-media.mjs";
+import path from "node:path";
 
 const dataDir = new URL("../app/products/data/", import.meta.url);
 const source = new URL("products.json", dataDir);
 const target = new URL("products.index.json", dataDir);
 const overlayFile = new URL("reference-overlay.json", dataDir);
+const mediaFile = new URL("catalog-media.json", dataDir);
+const publicDir = fileURLToPath(new URL("../public/", import.meta.url));
 
 const withReference = process.argv.includes("--with-reference");
 const FIELDS = ["sku", "name", "slug", "price", "image", "unit", "category", "stock", "brand"];
@@ -61,6 +65,12 @@ for (const p of products) {
 }
 if (problems.length) fail(problems);
 
+// Published static photos also belong in the cart/wishlist/checkout index.
+// Fail the production build if a photo is missing instead of shipping SVGs.
+const media = JSON.parse(await readFile(mediaFile, "utf8"));
+const mediaProblems = validateCatalogMedia(products, media, (image) => existsSync(path.join(publicDir, image)));
+if (mediaProblems.length) fail(mediaProblems);
+
 // ---- optional local reference merge -----------------------------------------
 let reference = null;
 if (withReference) {
@@ -72,7 +82,8 @@ if (withReference) {
 }
 
 let merged = 0;
-const index = products.map((product) => {
+const index = products.map((entry) => {
+  const product = withCatalogMedia(entry, media);
   const slim = {};
   for (const field of FIELDS) slim[field] = product[field];
   // productsForView("Featured") relies on this flag; only emitted when true.

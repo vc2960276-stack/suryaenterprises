@@ -9,6 +9,8 @@
 //   the pack sizes of one product.
 import "server-only";
 import productsData from "./products.json";
+import catalogMedia from "./catalog-media.json";
+import { withCatalogMedia } from "./catalog-media.mjs";
 import { CATEGORIES, categoryByData, categoryBySlug, slugify } from "../../config/taxonomy";
 import { getReference } from "./reference-overlay.server";
 
@@ -35,7 +37,9 @@ export function packSizeValue(unit) {
   return Number(match[1]) * (UNIT_FACTORS[match[2].toLowerCase()] ?? 1);
 }
 
-const records = productsData.map((product, order) => ({
+const records = productsData.map((entry, order) => {
+  const product = withCatalogMedia(entry, catalogMedia);
+  return {
   product,
   order,
   categorySlug: categoryByData[product.category]?.slug ?? null,
@@ -45,7 +49,8 @@ const records = productsData.map((product, order) => ({
   brandText: normalize(product.brand),
   metaText: normalize([product.subcategory, product.crop, product.productType, product.category].filter(Boolean).join(" ")),
   descText: normalize(product.description),
-}));
+  };
+});
 
 const bySlug = new Map(records.map((r) => [r.product.slug, r]));
 const bySku = new Map(records.map((r) => [r.product.sku, r]));
@@ -79,9 +84,8 @@ const sortDesc = (map) => [...map.entries()].sort((a, b) => b[1] - a[1] || Strin
 // Shapes sent to the browser
 // ---------------------------------------------------------------------------
 
-// The minimal props a ProductCard needs. In development, when the local
-// reference overlay is present, the card shows the reference image instead
-// of the placeholder (never in production — see reference-overlay.server.js).
+// Product cards use the same published photos as the detail and cart views.
+// The optional development reference overlay can still supply local previews.
 export function toCard(product) {
   const card = {
     sku: product.sku,

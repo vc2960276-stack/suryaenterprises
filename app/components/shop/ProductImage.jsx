@@ -7,10 +7,10 @@ import { categoryByData } from "../../config/taxonomy";
 
 // ONE product image component for cards, galleries, cart, wishlist, checkout
 // summary and search suggestions: contain-fit inside a white frame, the right
-// `unoptimized` flag (vector placeholders and anything served outside
-// /assets — e.g. local development images — bypass the optimizer) and a
+// `unoptimized` flag (precompressed catalog photos, vector placeholders and
+// local development images bypass the runtime optimizer) and a
 // graceful fallback to the category placeholder when the file fails to load.
-const needsRaw = (src) => typeof src === "string" && (src.endsWith(".svg") || !src.startsWith("/assets/"));
+const needsRaw = (src) => typeof src === "string" && (src.startsWith("/assets/catalog/") || src.endsWith(".svg") || !src.startsWith("/assets/"));
 
 export default function ProductImage({
   src,
