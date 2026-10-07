@@ -1,15 +1,16 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Heart, Menu, Phone, ShoppingCart, User, X, ChevronRight } from "lucide-react";
+import { Heart, Menu, Phone, ShoppingCart, X, ChevronRight } from "lucide-react";
 import { SITE, telHref } from "../../config/site";
 import { COMING_SOON } from "../../config/taxonomy";
 import { cartCount, useCart, useCartHydrated } from "../../lib-shop/cart";
 import { useWishlist, useWishlistHydrated } from "../../lib-shop/wishlist";
 import CategoryMegaMenu from "./CategoryMegaMenu";
+import AccountMenu, { AccountDrawerLinks, AccountIconLink } from "./AccountMenu";
+import BrandLogo from "./BrandLogo";
 import PinPicker from "./PinPicker";
 import SearchBar from "./SearchBar";
 import { ICONS } from "./icons";
@@ -42,53 +43,6 @@ function useCounts() {
   return { cart: cartReady ? cartCount(cart) : 0, wishlist: wishReady ? wishlist.length : 0 };
 }
 
-function Logo({ compact = false }) {
-  return (
-    <Link href="/" className="flex shrink-0 items-center gap-2" aria-label={`${SITE.name} home`}>
-      <Image
-        src={SITE.logo}
-        alt=""
-        width={compact ? 32 : 40}
-        height={compact ? 32 : 40}
-        preload
-        className="rounded object-contain"
-      />
-      <span className="flex flex-col leading-none">
-        <span className={`font-display font-extrabold tracking-tight text-ink ${compact ? "text-[15px]" : "text-lg"}`}>
-          Surya Enterprises
-        </span>
-        <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-earth">
-          {SITE.shortLabel}
-        </span>
-      </span>
-    </Link>
-  );
-}
-
-function SignInPlaceholder() {
-  return (
-    <span className="group relative">
-      <button
-        type="button"
-        aria-disabled="true"
-        aria-describedby="signin-tip"
-        onClick={(e) => e.preventDefault()}
-        className="flex cursor-not-allowed items-center gap-1.5 rounded-md px-2 py-1.5 text-[13px] font-semibold text-ink-2"
-      >
-        <User className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-        Sign in
-      </button>
-      <span
-        id="signin-tip"
-        role="tooltip"
-        className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 -translate-x-1/2 whitespace-nowrap rounded bg-ink px-2 py-1 text-xs text-white opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100"
-      >
-        Accounts coming soon
-      </span>
-    </span>
-  );
-}
-
 function MobileMenu({ open, onClose, categories }) {
   const panelRef = useRef(null);
   useEffect(() => {
@@ -109,12 +63,13 @@ function MobileMenu({ open, onClose, categories }) {
     <div className="fixed inset-0 z-[80] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
       <button type="button" aria-label="Close menu" onClick={onClose} className="absolute inset-0 bg-ink/50" />
       <div ref={panelRef} className="relative flex h-full w-[86%] max-w-sm flex-col overflow-y-auto bg-white shadow-2xl">
-        <div className="on-dark flex items-center justify-between bg-brand px-4 py-3 text-white">
-          <span className="font-display text-base font-extrabold">Shop by category</span>
-          <button type="button" onClick={onClose} aria-label="Close menu" className="rounded p-1 hover:bg-white/10">
+        <div className="flex items-center justify-between gap-2 border-b border-line bg-white px-3 py-2.5">
+          <BrandLogo height={40} onClick={onClose} />
+          <button type="button" onClick={onClose} aria-label="Close menu" className="-mr-1 flex h-11 w-11 items-center justify-center rounded text-ink hover:bg-canvas">
             <X className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
           </button>
         </div>
+        <p className="eyebrow px-4 pt-3 text-ink-2">Shop by category</p>
         <ul className="divide-y divide-line">
           {categories.map((c) => {
             const Icon = ICONS[c.icon];
@@ -151,6 +106,9 @@ function MobileMenu({ open, onClose, categories }) {
               </span>
             ))}
           </div>
+        </div>
+        <div className="border-t-8 border-canvas">
+          <AccountDrawerLinks onClose={onClose} />
         </div>
         <div className="border-t-8 border-canvas py-1">
           <p className="eyebrow px-4 pt-2">Company</p>
@@ -190,10 +148,15 @@ export default function Header({ categories }) {
     return () => ro.disconnect();
   }, []);
 
+  // Checkout renders its own slim "Secure checkout" header (see
+  // components/shop/CheckoutHeader.jsx) so the shopper isn't pulled away
+  // mid-purchase by search, categories or the mega-menu.
+  if (pathname === "/checkout") return null;
+
   return (
     <>
       {/* Utility strip (scrolls away) */}
-      <div className="on-dark hidden bg-brand-deep text-xs text-white lg:block">
+      <div className="on-dark print-hidden hidden bg-brand-deep text-xs text-white lg:block">
         <div className="shell flex h-8 items-center gap-4">
           <PinPicker />
           <a href={telHref} className="inline-flex items-center gap-1.5 text-white/90 hover:text-white">
@@ -215,15 +178,15 @@ export default function Header({ categories }) {
         </div>
       </div>
 
-      <header ref={headerRef} className="sticky top-0 z-50 bg-white shadow-[0_1px_0_#E3E7E4]">
+      <header ref={headerRef} className="print-hidden sticky top-0 z-50 bg-white shadow-[0_1px_0_#E3E7E4]">
         {/* Desktop main row */}
-        <div className="shell hidden h-16 items-center gap-6 lg:flex">
-          <Logo />
+        <div className="shell hidden h-[76px] items-center gap-6 lg:flex">
+          <BrandLogo height={56} priority className="relative -top-1" />
           <div className="max-w-3xl flex-1">
             <SearchBar categories={scopes} variant="desktop" />
           </div>
           <div className="ml-auto flex items-center gap-3">
-            <SignInPlaceholder />
+            <AccountMenu />
             <Link
               href="/wishlist"
               aria-label={`Wishlist, ${itemsLabel(counts.wishlist)}`}
@@ -251,12 +214,13 @@ export default function Header({ categories }) {
 
         {/* Mobile compact header */}
         <div className="lg:hidden">
-          <div className="flex h-12 items-center gap-2 px-3">
-            <button type="button" onClick={() => setMenuOpen(true)} aria-label="Open menu" className="-ml-2 flex h-11 w-11 items-center justify-center rounded text-ink">
+          <div className="flex h-[60px] items-center gap-1 px-3">
+            <button type="button" onClick={() => setMenuOpen(true)} aria-label="Open menu" className="-ml-2 flex h-11 w-11 shrink-0 items-center justify-center rounded text-ink">
               <Menu className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
             </button>
-            <Logo compact />
-            <div className="-mr-2 ml-auto flex items-center">
+            <BrandLogo height={44} responsiveHeight="clamp(34px, 10.3vw, 44px)" priority className="relative -top-1" />
+            <div className="-mr-2 ml-auto flex shrink-0 items-center">
+              <AccountIconLink className="flex h-11 w-10 items-center justify-center rounded text-ink" />
               <Link href="/wishlist" aria-label={`Wishlist, ${itemsLabel(counts.wishlist)}`} className="relative flex h-11 w-11 items-center justify-center rounded text-ink">
                 <span className="relative">
                   <Heart className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />

@@ -9,7 +9,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test test/*.test.mjs",
+    "test": "node --test test/*.test.mjs app/lib-account/__tests__/*.test.mjs",
     "verify": "npm run lint && npm test && npm run build"
   },
   "dependencies": {

@@ -1,147 +1,122 @@
-import React from 'react';
-import Link from 'next/link';
-import { FlaskConical, Factory, ShieldCheck, Building2, ChevronRight, Globe } from 'lucide-react';
-
+import Link from "next/link";
+import {
+  Building2, ChevronRight, FileText, Headset, LayoutGrid, ShoppingBag,
+} from "lucide-react";
 import PageHeader from "../components/shop/PageHeader";
+import { POLICY_LINKS } from "../config/policy-links";
+import { SITE } from "../config/site";
+import { CATEGORIES, COMING_SOON } from "../config/taxonomy";
+
+type SitemapLink = { name: string; href: string; desc?: string; soon?: boolean };
+type SitemapGroup = { id: string; title: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; links: SitemapLink[] };
+
+const groups: SitemapGroup[] = [
+  {
+    id: "shop",
+    title: "Shop",
+    icon: LayoutGrid,
+    links: [
+      { name: "Home", href: "/", desc: "Marketplace home — highlights, shop by need, rails" },
+      { name: "All categories", href: "/products", desc: "Every live category with counts and top picks" },
+      ...CATEGORIES.map((c) => ({ name: c.name, href: `/c/${c.slug}`, desc: c.description })),
+      { name: "Bulk & institutional", href: "/products/institutional", desc: "Technical-grade products with listed purity; quotes on request" },
+      { name: "Search", href: "/search", desc: "Search by product name, active ingredient or pack size" },
+      ...COMING_SOON.map((c) => ({ name: c.name, href: "/products", desc: "Coming soon", soon: true })),
+    ],
+  },
+  {
+    id: "account",
+    title: "Your orders & tools",
+    icon: ShoppingBag,
+    links: [
+      { name: "Cart", href: "/cart", desc: "Review items and place your order" },
+      { name: "Checkout", href: "/checkout", desc: "Delivery details and UPI payment" },
+      { name: "Wishlist", href: "/wishlist", desc: "Products you have saved for later" },
+      { name: "Track order", href: "/track-order", desc: "Dispatch and tracking details via our support team" },
+      { name: "Sign in", href: "/login", desc: "Access your account" },
+      { name: "Create account", href: "/register", desc: "Save addresses and see your orders" },
+      { name: "My account", href: "/account", desc: "Profile, saved addresses and order history" },
+    ],
+  },
+  {
+    id: "service",
+    title: "Customer service",
+    icon: Headset,
+    links: [
+      { name: "FAQs", href: "/faqs", desc: "Orders, payments, delivery, returns, product safety" },
+      { name: "Contact us", href: "/contact", desc: `Helpline ${SITE.helpline.display}, email and office addresses` },
+      { name: "Shipping & delivery", href: "/shipping-policy", desc: "Coverage, dispatch time, charges, hazardous-goods handling" },
+      { name: "Returns & refunds", href: "/return-refund-policy", desc: "Claims for damaged, wrong or expired-on-arrival items" },
+      { name: "Cancellations", href: "/cancellation-policy", desc: "Cancelling before dispatch and refund timelines" },
+      { name: "Payments", href: "/payment-policy", desc: "UPI via PayU, pending and failed payments" },
+      { name: "Grievance redressal", href: "/grievance-redressal", desc: "Grievance Officer and escalation" },
+    ],
+  },
+  {
+    id: "company",
+    title: "Company",
+    icon: Building2,
+    links: [
+      { name: "About Surya Enterprises", href: "/aboutUs", desc: "Who we are and what we make" },
+      { name: "Management", href: "/management", desc: "Leadership team" },
+      { name: "Quality assurance", href: "/quality-assurance", desc: "Manufacturing process, ISO and ZED certification" },
+      { name: "Careers", href: "/career", desc: "Open positions across India" },
+    ],
+  },
+  {
+    id: "policies",
+    title: "Policies & legal",
+    icon: FileText,
+    links: POLICY_LINKS.map((l) => ({ ...l })),
+  },
+];
+
 export default function SitemapPage() {
-    const categories = [
-        {
-            title: "Company & Overview",
-            icon: Building2,
-            color: "emerald",
-            badgeBg: "bg-emerald-100 text-emerald-700",
-            borderColor: "border-emerald-100",
-            hoverBg: "hover:border-emerald-300",
-            links: [
-                { name: "Home Page", href: "/", desc: "Main landing page & company highlight" },
-                { name: "About Us", href: "/aboutUs", desc: "Our 25+ years history, mission & values" },
-                { name: "Manufacturing Process", href: "/quality-assurance", desc: "4-step quality manufacturing workflow" },
-                { name: "Careers & Culture", href: "/career", desc: "Join India's leading agrochemical team" },
-                { name: "Contact & Headquarters", href: "/contact", desc: "Get in touch with our Gujarat offices" },
-            ]
-        },
-        {
-            title: "Products & Solutions",
-            icon: FlaskConical,
-            color: "indigo",
-            badgeBg: "bg-indigo-100 text-indigo-700",
-            borderColor: "border-indigo-100",
-            hoverBg: "hover:border-indigo-300",
-            links: [
-                { name: "All Products Overview", href: "/products", desc: "Complete catalog of agricultural solutions" },
-                { name: "Insecticides", href: "/c/insecticides", desc: "Crop protection solutions for managing harmful insects" },
-                { name: "Herbicides", href: "/c/herbicides", desc: "Responsible weed management products" },
-                { name: "Fungicides", href: "/c/fungicides", desc: "Focused crop care for managing fungal pressure" },
-                { name: "Plant Growth Regulators", href: "/c/pgr-and-others", desc: "PGR and specialty solutions for productive crops" },
-                { name: "Institutional Products", href: "/products/institutional", desc: "High-purity technical grades for bulk buyers" },
-                { name: "Search, Cart & Wishlist", href: "/search", desc: "Find products, review your cart and saved items" },
-            ]
-        },
-        {
-            title: "Process & Innovation",
-            icon: Factory,
-            color: "amber",
-            badgeBg: "bg-amber-100 text-amber-800",
-            borderColor: "border-amber-100",
-            hoverBg: "hover:border-amber-300",
-            links: [
-                { name: "Formulation R&D", href: "/quality-assurance", desc: "Extensive crop research & chemical design" },
-                { name: "State Facilities & Production", href: "/quality-assurance", desc: "Modern factories adhering to standards" },
-                { name: "Quality Control & Testing", href: "/quality-assurance", desc: "Rigorous laboratory testing for safety" },
-                { name: "Pan-India Distribution Network", href: "/contact", desc: "Covering 22+ states efficiently" },
-            ]
-        },
-        {
-            title: "Legal & Compliance",
-            icon: ShieldCheck,
-            color: "sky",
-            badgeBg: "bg-sky-100 text-sky-700",
-            borderColor: "border-sky-100",
-            hoverBg: "hover:border-sky-300",
-            links: [
-                { name: "Terms & Conditions", href: "/terms", desc: "Legal rules & product disclaimers" },
-                { name: "Privacy Policy", href: "/privacy", desc: "Data protection & privacy commitment" },
-                { name: "Safety Data Sheets (SDS)", href: "/quality-assurance", desc: "Material hazard & handling documentation" },
-                { name: "Quality Certifications", href: "/quality-assurance", desc: "ISO & regulatory approvals" },
-            ]
-        }
-    ];
-
-    return (
-        <main className="min-h-screen bg-slate-50/50 text-slate-800 font-sans pb-20">
-
-            <PageHeader eyebrow="Site Navigation" title="Web Sitemap" subtitle="Explore the complete structure of SURYAENTERPRISE Limited. Find quick links to our agricultural products, manufacturing processes, corporate information, and compliance disclosures." crumbs={[{ label: "Sitemap" }]} />
-
-            {/* ================= MAIN SITEMAP CONTENT ================= */}
-            <div className="shell pt-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {categories.map((cat, idx) => {
-                        const Icon = cat.icon;
-                        return (
-                            <div
-                                key={idx}
-                                className={`bg-white border ${cat.borderColor} rounded-lg p-6 md:p-8 shadow-sm transition-all duration-300 flex flex-col justify-between`}
-                            >
-                                <div>
-                                    {/* Category Header */}
-                                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                                        <div className={`p-3 rounded-lg ${cat.badgeBg}`}>
-                                            <Icon className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-xl font-bold text-slate-900">{cat.title}</h2>
-                                            <span className="text-xs text-slate-400 font-medium">
-                                                {cat.links.length} Pages Available
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Links List */}
-                                    <div className="space-y-3">
-                                        {cat.links.map((link, lIdx) => (
-                                            <Link
-                                                key={lIdx}
-                                                href={link.href}
-                                                className="group flex items-start justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
-                                            >
-                                                <div>
-                                                    <div className="text-sm font-semibold text-slate-800 group-hover:text-emerald-600 transition-colors flex items-center gap-1.5">
-                                                        {link.name}
-                                                    </div>
-                                                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                                                        {link.desc}
-                                                    </p>
-                                                </div>
-                                                <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all shrink-0 mt-1" />
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* ================= BOTTOM INFO BOX ================= */}
-                <div className="mt-12 bg-emerald-50/60 border border-emerald-200/60 rounded-lg p-8 text-center max-w-4xl mx-auto">
-                    <div className="flex justify-center mb-3 text-emerald-600">
-                        <Globe className="w-8 h-8" />
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">
-                        Looking for something specific?
-                    </h3>
-                    <p className="text-slate-600 text-xs md:text-sm max-w-xl mx-auto mb-6">
-                        If you can&apos;t find a particular product batch, distributor application, or safety data sheet, reach out directly to our Gujarat support desk.
-                    </p>
-                    <Link
-                        href="/contact"
-                        className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs md:text-sm px-6 py-3 rounded-lg transition-all shadow-emerald-200"
-                    >
-                        Contact Help Desk
-                    </Link>
-                </div>
-            </div>
-
-        </main>
-    );
+  return (
+    <main className="pb-3">
+      <PageHeader
+        eyebrow="Site navigation"
+        title="Sitemap"
+        subtitle="Every page on the Surya Enterprises marketplace — shopping, your orders, customer service, company information and policies."
+        crumbs={[{ label: "Sitemap" }]}
+      />
+      <div className="shell grid gap-3 pt-3 md:grid-cols-2 xl:grid-cols-3">
+        {groups.map((g) => {
+          const Icon = g.icon;
+          return (
+            <section key={g.id} id={g.id} aria-labelledby={`${g.id}-title`} className="panel scroll-mt-[calc(var(--header-h)+12px)] p-5">
+              <h2 id={`${g.id}-title`} className="flex items-center gap-2.5 font-display text-[17px] font-extrabold text-ink">
+                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-brand-tint text-brand">
+                  <Icon className="h-4 w-4" strokeWidth={1.75} />
+                </span>
+                {g.title}
+                <span className="ml-auto text-xs font-medium text-ink-3">{g.links.length} pages</span>
+              </h2>
+              <ul className="mt-3 divide-y divide-line">
+                {g.links.map((l) => (
+                  <li key={`${g.id}-${l.href}-${l.name}`}>
+                    {l.soon ? (
+                      <span className="flex items-center justify-between gap-3 py-2 text-[13px] text-ink-3">
+                        <span>
+                          {l.name} <span className="ml-1 rounded-full border border-line px-1.5 py-px text-[9px] font-bold uppercase tracking-wider">Soon</span>
+                        </span>
+                      </span>
+                    ) : (
+                      <Link href={l.href} className="group flex items-center justify-between gap-3 py-2 text-[13px]">
+                        <span className="min-w-0">
+                          <span className="block font-semibold text-ink group-hover:text-brand">{l.name}</span>
+                          {l.desc && <span className="block truncate text-xs text-ink-2">{l.desc}</span>}
+                        </span>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-ink-3 transition-transform group-hover:translate-x-0.5 group-hover:text-brand" strokeWidth={1.75} />
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })}
+      </div>
+    </main>
+  );
 }

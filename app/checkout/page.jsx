@@ -4,6 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { getProduct, formatINR } from "../products/data/products";
+import { ArrowLeft, ChevronDown, CircleCheckBig, Lock, Phone, ShieldCheck, ShoppingBag, Smartphone } from "lucide-react";
+import CheckoutHeader, { PaymentStatus } from "../components/shop/CheckoutHeader";
+import PaymentPartners from "../components/shop/PaymentPartners";
+import { SITE, telHref } from "../config/site";
+import { useCheckoutAccount } from "../lib-account/use-checkout-account";
 
 function readCart() {
   if (typeof window === "undefined") return {};
@@ -41,6 +46,10 @@ export default function CheckoutPage() {
   const [payment, setPayment] = useState(null);
   const [paymentMessage, setPaymentMessage] = useState("");
   const [paymentChecking, setPaymentChecking] = useState(false);
+
+  // Customer account glue (pre-fill, saved addresses, order id, save after
+  // success). Wraps the state above; the PayU calls below are untouched.
+  const account = useCheckoutAccount({ details, setDetails, payment, orderPlaced });
 
   const cartItems = Object.entries(cart)
     .map(([sku, quantity]) => ({
@@ -272,34 +281,78 @@ export default function CheckoutPage() {
 
   if (orderPlaced) {
     return (
-      <main className="min-h-screen bg-white px-6 py-24 text-center">
-        <div
-          className="mx-auto max-w-xl border border-green-100 bg-green-50 px-8 py-16"
-          data-testid="order-confirmation"
-        >
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-700">
-            Order confirmed
-          </p>
-
-          <h1 className="mt-4 text-4xl font-bold text-slate-900">
-            Thank you for your order
-          </h1>
-
-          <p className="mt-4 leading-7 text-slate-600">
-            Your payment has been successfully
-            received. We have received your order
-            and will contact you shortly to confirm
-            delivery details.
-          </p>
-
-          <Link
-            href="/"
-            className="mt-8 inline-flex bg-green-700 px-6 py-3 font-bold text-white hover:bg-green-800"
+      <>
+        <CheckoutHeader step="done" />
+        <main className="shell py-6 sm:py-10">
+          <div
+            className="mx-auto max-w-xl rounded-lg border border-line bg-white px-5 py-10 text-center sm:px-10"
+            data-testid="order-confirmation"
           >
-            Return to home
-          </Link>
-        </div>
-      </main>
+            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-tint text-brand">
+              <CircleCheckBig className="h-9 w-9" strokeWidth={1.75} aria-hidden="true" />
+            </span>
+
+            <p className="eyebrow mt-5 text-brand">
+              Order confirmed
+            </p>
+
+            <h1 className="mt-1 font-display text-[26px] font-extrabold leading-tight text-ink sm:text-[32px]">
+              Thank you for your order
+            </h1>
+
+            <p className="mx-auto mt-3 max-w-md text-[14px] leading-relaxed text-ink-2">
+              Your payment has been successfully
+              received. We have received your order
+              and will contact you shortly to confirm
+              delivery details.
+            </p>
+
+            {account.lastOrderId && (
+              <div className="mx-auto mt-5 inline-flex flex-col items-center rounded-lg border border-line bg-canvas px-6 py-3">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-ink-2">Order ID</span>
+                <span className="mt-0.5 font-mono text-[20px] font-bold tracking-wide text-ink sm:text-[22px]">
+                  {account.lastOrderId}
+                </span>
+                <span className="mt-1 text-xs text-ink-2">Keep this for tracking and support.</span>
+              </div>
+            )}
+
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              {account.customer ? (
+                <Link href="/account?tab=orders" className="btn btn-buy h-11 px-6">
+                  View my orders
+                </Link>
+              ) : (
+                <Link href="/track-order" className="btn btn-buy h-11 px-6">
+                  Track this order
+                </Link>
+              )}
+              <Link
+                href="/"
+                className="btn btn-outline h-11 px-6"
+              >
+                Return to home
+              </Link>
+            </div>
+
+            {account.customer ? (
+              <p className="mt-4 text-xs text-ink-2">The delivery address has been saved to your account.</p>
+            ) : (
+              <p className="mt-4 text-xs text-ink-2">
+                <Link href="/register" className="font-semibold text-brand hover:underline">Create an account</Link> to see your orders and save addresses for next time.
+              </p>
+            )}
+
+            <p className="mt-6 text-xs text-ink-2">
+              Questions about your order? Call{" "}
+              <a href={telHref} className="font-semibold text-brand hover:underline">
+                {SITE.helpline.display}
+              </a>{" "}
+              ({SITE.helpline.hours}) or email {SITE.email}.
+            </p>
+          </div>
+        </main>
+      </>
     );
   }
 
@@ -315,134 +368,162 @@ export default function CheckoutPage() {
       )}`;
 
     return (
-      <main className="min-h-screen bg-slate-50 px-4 py-14 text-slate-800 sm:px-8 md:px-12 lg:px-20">
-        <div className="mx-auto max-w-2xl rounded-2xl bg-white p-6 text-center shadow-xl sm:p-10">
+      <>
+        <CheckoutHeader step="payment" />
+        <main className="shell pb-24 pt-3 sm:pt-6 lg:pb-10">
+          <div className="mx-auto grid max-w-4xl gap-3 lg:grid-cols-[minmax(0,1fr)_336px] lg:items-start">
 
-          {/* Header */}
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-700">
-            Secure UPI Payment
-          </p>
-
-          <h1 className="mt-3 text-3xl font-bold text-slate-900">
-            Complete Your Payment
-          </h1>
-
-          <p className="mt-3 text-slate-600">
-            Scan the QR code using any supported
-            UPI app and complete your payment.
-          </p>
-
-          {/* Amount */}
-          <div className="mt-6">
-            <p className="text-sm text-slate-500">
-              Amount
-            </p>
-
-            <p className="mt-1 text-3xl font-bold text-slate-900">
-              {formatINR(payment.amount)}
-            </p>
-          </div>
-
-          {/* QR */}
-          <div className="mx-auto mt-8 w-fit rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <Image
-              src={qrUrl}
-              alt="UPI payment QR code"
-              width={320}
-              height={320}
-              unoptimized
-              className="h-64 w-64 sm:h-80 sm:w-80"
-            />
-          </div>
-
-          {/* Order ID */}
-          <div className="mt-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-              Order ID
-            </p>
-
-            <p className="mt-1 break-all font-semibold text-slate-900">
-              {payment.order_id}
-            </p>
-          </div>
-
-          {/* Open UPI App */}
-          {payment.qr_string && (
-            <a
-              href={payment.qr_string}
-              className="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-green-700 px-6 py-3 font-bold text-white hover:bg-green-800 sm:w-auto"
+            <section
+              aria-labelledby="pay-title"
+              className="rounded-lg border border-line bg-white px-5 py-7 text-center sm:px-10"
             >
-              Open UPI App
-            </a>
-          )}
+              {/* Header */}
+              <p className="eyebrow text-brand">
+                Secure UPI Payment
+              </p>
 
-          {/* Instructions */}
-          <div className="mt-6 rounded-lg bg-slate-50 p-4 text-left text-sm leading-6 text-slate-600">
-            <p className="font-semibold text-slate-900">
-              How to pay
-            </p>
+              <h1 id="pay-title" className="mt-1 font-display text-[24px] font-extrabold leading-tight text-ink sm:text-[28px]">
+                Complete your payment
+              </h1>
 
-            <ol className="mt-2 list-decimal space-y-1 pl-5">
-              <li>
-                Open Google Pay, PhonePe, Paytm or
-                another supported UPI app.
-              </li>
+              <p className="mt-2 text-[14px] text-ink-2">
+                Scan the QR code using any supported
+                UPI app and approve the payment.
+              </p>
 
-              <li>
-                Scan the QR code above.
-              </li>
+              {/* Amount */}
+              <div className="mx-auto mt-5 inline-flex flex-col items-center rounded-lg bg-canvas px-8 py-3">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-ink-2">
+                  Amount payable
+                </p>
 
-              <li>
-                Complete the payment.
-              </li>
+                <p className="mt-0.5 font-display text-[32px] font-extrabold leading-none tabular-nums text-ink">
+                  {formatINR(payment.amount)}
+                </p>
+              </div>
 
-              <li>
-                Return here and click
-                <strong>
-                  {" "}I Have Paid — Check Payment
-                </strong>.
-              </li>
-            </ol>
+              {/* QR */}
+              <div className="relative mx-auto mt-6 w-fit rounded-xl border border-line bg-white p-3 shadow-[0_8px_24px_rgba(20,33,26,0.08)]">
+                <span aria-hidden="true" className="absolute -left-px -top-px h-6 w-6 rounded-tl-xl border-l-[3px] border-t-[3px] border-brand" />
+                <span aria-hidden="true" className="absolute -right-px -top-px h-6 w-6 rounded-tr-xl border-r-[3px] border-t-[3px] border-brand" />
+                <span aria-hidden="true" className="absolute -bottom-px -left-px h-6 w-6 rounded-bl-xl border-b-[3px] border-l-[3px] border-brand" />
+                <span aria-hidden="true" className="absolute -bottom-px -right-px h-6 w-6 rounded-br-xl border-b-[3px] border-r-[3px] border-brand" />
+                <Image
+                  src={qrUrl}
+                  alt="UPI payment QR code"
+                  width={320}
+                  height={320}
+                  unoptimized
+                  className="h-60 w-60 rounded-md sm:h-72 sm:w-72"
+                />
+              </div>
+
+              {/* Order ID */}
+              <p className="mt-4 text-xs text-ink-2">
+                Order ID{" "}
+                <span className="break-all font-mono font-semibold text-ink">
+                  {payment.order_id}
+                </span>
+              </p>
+
+              {/* Open UPI App */}
+              {payment.qr_string && (
+                <a
+                  href={payment.qr_string}
+                  className="btn btn-cart mt-5 h-11 w-full sm:w-auto sm:px-8"
+                >
+                  <Smartphone className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+                  Open UPI app
+                </a>
+              )}
+
+              {/* Check Payment */}
+              <button
+                type="button"
+                disabled={paymentChecking}
+                onClick={checkPaymentStatus}
+                className="btn btn-buy mt-3 h-12 w-full text-[15px]"
+              >
+                {paymentChecking
+                  ? "Checking payment…"
+                  : "I have paid — check payment"}
+              </button>
+
+              {/* Status message */}
+              {paymentMessage && (
+                <PaymentStatus message={paymentMessage} />
+              )}
+
+              <p className="mt-5 text-xs text-ink-3">
+                Payment status is confirmed by Surya
+                Enterprises using PayU. Do not close this
+                page until your payment is confirmed.
+              </p>
+
+              {/* Back */}
+              <button
+                type="button"
+                onClick={() => {
+                  setPayment(null);
+                  setPaymentMessage("");
+                }}
+                className="mt-4 inline-flex min-h-11 items-center gap-1.5 rounded px-2 text-[13px] font-semibold text-ink-2 hover:text-brand"
+              >
+                <ArrowLeft className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+                Back to checkout
+              </button>
+            </section>
+
+            <aside className="space-y-3">
+              {/* Instructions */}
+              <div className="rounded-lg border border-line bg-white p-5">
+                <p className="eyebrow">
+                  How to pay
+                </p>
+
+                <ol className="mt-3 space-y-3 text-[13px] text-ink-2">
+                  {[
+                    "Open Google Pay, PhonePe, Paytm or another supported UPI app.",
+                    "Scan the QR code, or tap “Open UPI app” on this phone.",
+                    "Check the amount and approve the payment with your UPI PIN.",
+                    "Return here and tap “I have paid — check payment”.",
+                  ].map((text, i) => (
+                    <li key={text} className="flex gap-3">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-tint text-[11px] font-bold tabular-nums text-brand">
+                        {i + 1}
+                      </span>
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <PaymentPartners />
+
+              <ul className="space-y-2.5 rounded-lg border border-line bg-white p-5 text-[13px] text-ink-2">
+                <li className="flex gap-2.5">
+                  <Lock className="mt-0.5 h-4 w-4 shrink-0 text-brand" strokeWidth={1.75} aria-hidden="true" />
+                  Your UPI PIN is entered only in your UPI app — never on this site.
+                </li>
+                <li className="flex gap-2.5">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand" strokeWidth={1.75} aria-hidden="true" />
+                  No card or bank details are stored by Surya Enterprises.
+                </li>
+                <li className="flex gap-2.5">
+                  <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand" strokeWidth={1.75} aria-hidden="true" />
+                  <span>
+                    Stuck? Call{" "}
+                    <a href={telHref} className="font-semibold text-brand hover:underline">
+                      {SITE.helpline.display}
+                    </a>{" "}
+                    with your order ID.
+                  </span>
+                </li>
+              </ul>
+            </aside>
           </div>
-
-          {/* Check Payment */}
-          <button
-            type="button"
-            disabled={paymentChecking}
-            onClick={checkPaymentStatus}
-            className="mt-6 w-full rounded-lg bg-green-700 px-6 py-4 font-bold text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:bg-slate-300"
-          >
-            {paymentChecking
-              ? "Checking Payment..."
-              : "I Have Paid — Check Payment"}
-          </button>
-
-          {/* Status message */}
-          {paymentMessage && (
-            <div className="mt-4 rounded-lg bg-slate-50 p-4 text-sm font-medium text-slate-600">
-              {paymentMessage}
-            </div>
-          )}
-
-          <p className="mt-5 text-xs text-slate-400">
-            Payment status is confirmed by Surya
-            Enterprise using PayU. Do not close this
-            page until your payment is confirmed.
-          </p>
-
-          {/* Back */}
-          <button
-            type="button"
-            onClick={() => {
-              setPayment(null);
-              setPaymentMessage("");
-            }}
-            className="mt-5 text-sm font-semibold text-slate-500 hover:text-slate-900"
-          >
-            ← Back to Checkout
-          </button>
-        </div>
-      </main>
+        </main>
+      </>
     );
   }
 
@@ -451,305 +532,476 @@ export default function CheckoutPage() {
   // --------------------------------------------------
 
   return (
-    <main className="min-h-screen bg-white px-4 py-14 text-slate-800 sm:px-8 md:px-12 lg:px-20">
+    <>
+      <CheckoutHeader step="details" />
+      <main className="shell pb-28 pt-3 lg:pb-8 lg:pt-4">
 
-      <form
-        onSubmit={placeOrder}
-        className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.1fr_0.9fr]"
-      >
+        <form
+          onSubmit={placeOrder}
+          className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start"
+        >
 
-        {/* =========================
-            BILLING DETAILS
-        ========================== */}
+          {/* =========================
+              ORDER SUMMARY
+              (first in DOM so it is the collapsible bar on phones;
+               sticky right column from lg up)
+          ========================== */}
 
-        <section>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-700">
-            Checkout
-          </p>
-
-          <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
-            Billing Details
-          </h1>
-
-          <div className="mt-8 grid gap-5 sm:grid-cols-2">
-
-            <label className="text-sm font-semibold">
-              First name{" "}
-              <span className="text-red-600">
-                *
-              </span>
-
-              <input
-                required
-                name="firstName"
-                value={details.firstName}
-                onChange={updateDetails}
-                className="mt-2 w-full border border-slate-400 px-3 py-3 font-normal outline-none focus:border-green-700"
-              />
-            </label>
-
-            <label className="text-sm font-semibold">
-              Last name{" "}
-              <span className="text-red-600">
-                *
-              </span>
-
-              <input
-                required
-                name="lastName"
-                value={details.lastName}
-                onChange={updateDetails}
-                className="mt-2 w-full border border-slate-400 px-3 py-3 font-normal outline-none focus:border-green-700"
-              />
-            </label>
-          </div>
-
-          <label className="mt-5 block text-sm font-semibold">
-            Country / Region
-
-            <input
-              readOnly
-              value="India"
-              className="mt-2 w-full border border-slate-200 bg-slate-50 px-3 py-3 font-normal"
-            />
-          </label>
-
-          <label className="mt-5 block text-sm font-semibold">
-            House number and street name{" "}
-            <span className="text-red-600">
-              *
-            </span>
-
-            <input
-              required
-              name="address"
-              value={details.address}
-              onChange={updateDetails}
-              className="mt-2 w-full border border-slate-400 px-3 py-3 font-normal outline-none focus:border-green-700"
-            />
-          </label>
-
-          <label className="mt-5 block text-sm font-semibold">
-            Apartment, suite, etc.{" "}
-            <span className="font-normal text-slate-400">
-              (optional)
-            </span>
-
-            <input
-              name="apartment"
-              value={details.apartment}
-              onChange={updateDetails}
-              className="mt-2 w-full border border-slate-400 px-3 py-3 font-normal outline-none focus:border-green-700"
-            />
-          </label>
-
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
-
-            <label className="text-sm font-semibold">
-              Town / City{" "}
-              <span className="text-red-600">
-                *
-              </span>
-
-              <input
-                required
-                name="city"
-                value={details.city}
-                onChange={updateDetails}
-                className="mt-2 w-full border border-slate-400 px-3 py-3 font-normal outline-none focus:border-green-700"
-              />
-            </label>
-
-            <label className="text-sm font-semibold">
-              State{" "}
-              <span className="text-red-600">
-                *
-              </span>
-
-              <select
-                name="state"
-                value={details.state}
-                onChange={updateDetails}
-                className="mt-2 w-full border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-green-700"
+          <aside aria-label="Order summary" className="lg:sticky lg:top-[76px] lg:order-2">
+            <div className="rounded-lg border border-line bg-white">
+              {/* Phone: CSS-only expand/collapse — no extra state */}
+              <input type="checkbox" id="summary-toggle" className="peer sr-only lg:hidden" />
+              <label
+                htmlFor="summary-toggle"
+                className="flex cursor-pointer select-none items-center justify-between gap-3 px-4 py-3 text-[14px] font-semibold text-ink peer-focus-visible:outline-2 peer-focus-visible:outline-brand peer-checked:[&_svg.chev]:rotate-180 lg:hidden"
               >
-                <option>Delhi</option>
-                <option>Gujarat</option>
-                <option>Maharashtra</option>
-                <option>Rajasthan</option>
-                <option>Uttar Pradesh</option>
-              </select>
-            </label>
-          </div>
-
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
-
-            <label className="text-sm font-semibold">
-              PIN Code{" "}
-              <span className="text-red-600">
-                *
-              </span>
-
-              <input
-                required
-                inputMode="numeric"
-                name="pinCode"
-                value={details.pinCode}
-                onChange={updateDetails}
-                className="mt-2 w-full border border-slate-400 px-3 py-3 font-normal outline-none focus:border-green-700"
-              />
-            </label>
-
-            <label className="text-sm font-semibold">
-              Phone{" "}
-              <span className="text-red-600">
-                *
-              </span>
-
-              <input
-                required
-                type="tel"
-                name="phone"
-                value={details.phone}
-                onChange={updateDetails}
-                className="mt-2 w-full border border-slate-400 px-3 py-3 font-normal outline-none focus:border-green-700"
-              />
-            </label>
-          </div>
-
-          <label className="mt-5 block text-sm font-semibold">
-            Email address{" "}
-            <span className="text-red-600">
-              *
-            </span>
-
-            <input
-              required
-              type="email"
-              name="email"
-              value={details.email}
-              onChange={updateDetails}
-              className="mt-2 w-full border border-slate-400 px-3 py-3 font-normal outline-none focus:border-green-700"
-            />
-          </label>
-
-          <h2 className="mt-10 text-2xl font-bold text-slate-900">
-            Additional Information
-          </h2>
-
-          <label className="mt-4 block text-sm font-semibold">
-            Order notes{" "}
-            <span className="font-normal text-slate-400">
-              (optional)
-            </span>
-
-            <textarea
-              name="notes"
-              value={details.notes}
-              onChange={updateDetails}
-              placeholder="Notes about your order, e.g. special notes for delivery."
-              rows={4}
-              className="mt-2 w-full resize-y border border-slate-400 px-3 py-3 font-normal outline-none focus:border-green-700"
-            />
-          </label>
-        </section>
-
-        {/* =========================
-            ORDER SUMMARY
-        ========================== */}
-
-        <aside className="self-start bg-slate-50 p-6 md:p-8">
-
-          <h2 className="text-2xl font-bold text-slate-900">
-            Your Order
-          </h2>
-
-          <div className="mt-5 border-y border-slate-200">
-
-            <div className="grid grid-cols-[1fr_auto] gap-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">
-              <span>Product</span>
-              <span>Subtotal</span>
-            </div>
-
-            {cartItems.length === 0 ? (
-              <p className="border-t border-slate-200 py-5 text-sm text-slate-500">
-                Your cart is empty.{" "}
-
-                <Link
-                  href="/products"
-                  className="font-semibold text-green-700 underline"
-                >
-                  Browse products
-                </Link>
-              </p>
-            ) : (
-              cartItems.map((item) => (
-                <div
-                  key={item.product.sku}
-                  className="grid grid-cols-[1fr_auto] gap-4 border-t border-slate-200 py-4 text-sm"
-                >
-                  <span className="leading-5">
-                    {item.product.name} ×{" "}
-                    {item.quantity}
+                <span className="inline-flex items-center gap-2">
+                  <ShoppingBag className="h-4 w-4 text-brand" strokeWidth={1.75} aria-hidden="true" />
+                  Order summary
+                  <span className="font-normal text-ink-2">
+                    · {cartItems.length} {cartItems.length === 1 ? "item" : "items"}
                   </span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 tabular-nums">
+                  {formatINR(subtotal)}
+                  <ChevronDown className="chev h-4 w-4 text-ink-3 transition-transform" strokeWidth={1.75} aria-hidden="true" />
+                </span>
+              </label>
 
-                  <span>
-                    {formatINR(
-                      item.product.price *
-                      item.quantity
-                    )}
-                  </span>
+              <h2 className="hidden border-b border-line px-4 py-3 text-xs font-bold uppercase tracking-wider text-ink-2 lg:block">
+                Order summary
+              </h2>
+
+              <div className="hidden border-t border-line peer-checked:block lg:block lg:border-t-0">
+                {cartItems.length === 0 ? (
+                  <p className="px-4 py-6 text-center text-sm text-ink-2">
+                    Your cart is empty.{" "}
+
+                    <Link
+                      href="/products"
+                      className="font-semibold text-brand underline"
+                    >
+                      Browse products
+                    </Link>
+                  </p>
+                ) : (
+                  <ul className="divide-y divide-line px-4">
+                    {cartItems.map((item) => (
+                      <li
+                        key={item.product.sku}
+                        className="flex gap-3 py-3 text-sm"
+                      >
+                        <span className="relative block h-14 w-14 shrink-0 overflow-hidden rounded-md border border-line bg-white">
+                          <Image src={item.product.image} alt="" fill sizes="56px" className="object-contain p-1" />
+                        </span>
+
+                        <span className="min-w-0 flex-1">
+                          <span className="line-clamp-2 text-[13px] font-medium leading-snug text-ink">
+                            {item.product.name}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-ink-2">
+                            {item.product.unit} · Qty {item.quantity}
+                          </span>
+                        </span>
+
+                        <span className="shrink-0 text-[14px] font-semibold tabular-nums text-ink">
+                          {formatINR(
+                            item.product.price *
+                            item.quantity
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <dl className="space-y-2 border-t border-line px-4 py-4 text-[14px] tabular-nums">
+                  <div className="flex justify-between">
+                    <dt className="text-ink-2">Subtotal</dt>
+                    <dd>
+                      {formatINR(subtotal)}
+                    </dd>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <dt className="text-ink-2">Delivery</dt>
+                    <dd className="text-ink-2">{SITE.delivery.cartDeliveryLabel}</dd>
+                  </div>
+
+                  <div className="flex justify-between border-t border-dashed border-line pt-3 text-base font-bold text-ink">
+                    <dt>Total</dt>
+                    <dd>
+                      {formatINR(subtotal)}
+                    </dd>
+                  </div>
+                </dl>
+
+                {/* PAYMENT METHOD */}
+
+                <div className="border-t border-line px-4 py-4">
+
+                  <p className="flex items-center gap-2 text-[13px] font-semibold text-ink">
+                    <Smartphone className="h-4 w-4 text-brand" strokeWidth={1.75} aria-hidden="true" />
+                    Pay with UPI via PayU
+                  </p>
+
+                  <p className="mt-1 text-xs leading-relaxed text-ink-2">
+                    Pay securely using UPI. After
+                    placing your order, a secure UPI
+                    payment QR code will appear.
+                  </p>
+                  <PaymentPartners compact className="mt-3" />
                 </div>
-              ))
-            )}
 
-            <div className="grid grid-cols-[1fr_auto] border-t border-slate-200 py-4 text-sm font-bold">
-              <span>Subtotal</span>
-              <span>
-                {formatINR(subtotal)}
-              </span>
+                <ul className="space-y-2 border-t border-line px-4 py-4 text-xs text-ink-2">
+                  <li className="flex gap-2">
+                    <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" strokeWidth={1.75} aria-hidden="true" />
+                    Your UPI PIN is entered only in your UPI app. We never store card or bank details.
+                  </li>
+                  <li className="flex gap-2">
+                    <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" strokeWidth={1.75} aria-hidden="true" />
+                    Manufacturer direct — sold and shipped by Surya Enterprises.
+                  </li>
+                  <li className="flex gap-2">
+                    <Phone className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" strokeWidth={1.75} aria-hidden="true" />
+                    Helpline {SITE.helpline.display} · {SITE.helpline.hours}
+                  </li>
+                </ul>
+              </div>
+
+              {/* PLACE ORDER — fixed bar above the bottom nav on phones, inline from lg up */}
+
+              <div className="fixed inset-x-0 bottom-[var(--bottom-nav-h)] z-40 flex items-center gap-3 border-t border-line bg-white px-3 py-2 lg:static lg:border-t lg:px-4 lg:py-4">
+                <div className="tabular-nums lg:hidden">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-2">Total</p>
+                  <p className="text-lg font-bold leading-tight text-ink">{formatINR(subtotal)}</p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={
+                    cartItems.length === 0 ||
+                    isLoading
+                  }
+                  data-testid="place-order-btn"
+                  className="btn btn-buy h-12 flex-1 text-[15px] lg:w-full"
+                >
+                  {isLoading
+                    ? "Creating Payment..."
+                    : `Pay ${formatINR(subtotal)}`}
+                </button>
+              </div>
+            </div>
+          </aside>
+
+          {/* =========================
+              BILLING DETAILS
+          ========================== */}
+
+          <section className="space-y-3 lg:order-1">
+            <div className="rounded-lg border border-line bg-white">
+              <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3 sm:px-6">
+                <div>
+                  <p className="eyebrow">
+                    Checkout
+                  </p>
+
+                  <h1 className="font-display text-[20px] font-extrabold leading-tight text-ink sm:text-[22px]">
+                    Delivery details
+                  </h1>
+                </div>
+                <Link href="/cart" className="text-[13px] font-semibold text-brand hover:underline">
+                  Edit cart
+                </Link>
+              </div>
+
+              <div className="px-4 py-4 sm:px-6 sm:py-5">
+
+                <fieldset>
+                  <legend className="mb-3 text-[12px] font-bold uppercase tracking-wider text-ink-2">
+                    Contact
+                  </legend>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+
+                    <label className="block">
+                      <span className="field-label">
+                        Phone{" "}
+                        <span className="text-danger">
+                          *
+                        </span>
+                      </span>
+
+                      <input
+                        required
+                        type="tel"
+                        name="phone"
+                        value={details.phone}
+                        onChange={updateDetails}
+                        autoComplete="tel"
+                        className="input"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="field-label">
+                        Email address{" "}
+                        <span className="text-danger">
+                          *
+                        </span>
+                      </span>
+
+                      <input
+                        required
+                        type="email"
+                        name="email"
+                        value={details.email}
+                        onChange={updateDetails}
+                        autoComplete="email"
+                        className="input"
+                      />
+                    </label>
+                  </div>
+                </fieldset>
+
+                <fieldset className="mt-6 border-t border-line pt-5">
+                  <legend className="sr-only">
+                    Delivery address
+                  </legend>
+                  <p aria-hidden="true" className="mb-3 text-[12px] font-bold uppercase tracking-wider text-ink-2">
+                    Delivery address
+                  </p>
+
+                  {/* Account: saved addresses / sign-in prompt (guest checkout always allowed) */}
+                  {account.customer ? (
+                    account.addresses.length > 0 && (
+                      <div className="mb-4 rounded-md border border-brand/30 bg-brand-tint/40 p-3 text-[13px]">
+                        {account.savedAddress ? (
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <p className="text-ink">
+                              <span className="font-semibold">Delivering to {account.savedAddress.label}:</span>{" "}
+                              {account.savedAddress.address}
+                              {account.savedAddress.apartment ? `, ${account.savedAddress.apartment}` : ""}, {account.savedAddress.city} — {account.savedAddress.pinCode}
+                            </p>
+                            <button type="button" onClick={account.useDifferentAddress} className="font-semibold text-brand hover:underline">
+                              Use a different address
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-ink-2">Use a saved address:</span>
+                            {account.addresses.map((a) => (
+                              <button key={a.id} type="button" onClick={() => account.applyAddress(a)} className="chip hover:border-brand hover:text-brand">
+                                {a.label} · {a.city} {a.pinCode}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  ) : account.sessionReady ? (
+                    <p className="mb-4 text-[13px] text-ink-2">
+                      Have an account?{" "}
+                      <Link href="/login?next=/checkout" className="font-semibold text-brand hover:underline">
+                        Sign in
+                      </Link>{" "}
+                      to fill these details from your saved address. Guest checkout works too.
+                    </p>
+                  ) : null}
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+
+                    <label className="block">
+                      <span className="field-label">
+                        First name{" "}
+                        <span className="text-danger">
+                          *
+                        </span>
+                      </span>
+
+                      <input
+                        required
+                        name="firstName"
+                        value={details.firstName}
+                        onChange={updateDetails}
+                        autoComplete="given-name"
+                        className="input"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="field-label">
+                        Last name{" "}
+                        <span className="text-danger">
+                          *
+                        </span>
+                      </span>
+
+                      <input
+                        required
+                        name="lastName"
+                        value={details.lastName}
+                        onChange={updateDetails}
+                        autoComplete="family-name"
+                        className="input"
+                      />
+                    </label>
+                  </div>
+
+                  <label className="mt-4 block">
+                    <span className="field-label">
+                      House number and street name{" "}
+                      <span className="text-danger">
+                        *
+                      </span>
+                    </span>
+
+                    <input
+                      required
+                      name="address"
+                      value={details.address}
+                      onChange={updateDetails}
+                      autoComplete="address-line1"
+                      className="input"
+                    />
+                  </label>
+
+                  <label className="mt-4 block">
+                    <span className="field-label">
+                      Apartment, suite, etc.{" "}
+                      <span className="font-normal text-ink-3">
+                        (optional)
+                      </span>
+                    </span>
+
+                    <input
+                      name="apartment"
+                      value={details.apartment}
+                      onChange={updateDetails}
+                      autoComplete="address-line2"
+                      className="input"
+                    />
+                  </label>
+
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+
+                    <label className="block">
+                      <span className="field-label">
+                        Town / City{" "}
+                        <span className="text-danger">
+                          *
+                        </span>
+                      </span>
+
+                      <input
+                        required
+                        name="city"
+                        value={details.city}
+                        onChange={updateDetails}
+                        autoComplete="address-level2"
+                        className="input"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="field-label">
+                        State{" "}
+                        <span className="text-danger">
+                          *
+                        </span>
+                      </span>
+
+                      <select
+                        name="state"
+                        value={details.state}
+                        onChange={updateDetails}
+                        autoComplete="address-level1"
+                        className="input"
+                      >
+                        <option>Delhi</option>
+                        <option>Gujarat</option>
+                        <option>Maharashtra</option>
+                        <option>Rajasthan</option>
+                        <option>Uttar Pradesh</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+
+                    <label className="block">
+                      <span className="field-label">
+                        PIN Code{" "}
+                        <span className="text-danger">
+                          *
+                        </span>
+                      </span>
+
+                      <input
+                        required
+                        inputMode="numeric"
+                        name="pinCode"
+                        value={details.pinCode}
+                        onChange={updateDetails}
+                        autoComplete="postal-code"
+                        className="input"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="field-label">
+                        Country / Region
+                      </span>
+
+                      <input
+                        readOnly
+                        value="India"
+                        autoComplete="country-name"
+                        className="input"
+                      />
+                    </label>
+                  </div>
+                </fieldset>
+
+                <fieldset className="mt-6 border-t border-line pt-5">
+                  <legend className="sr-only">
+                    Additional information
+                  </legend>
+                  <p aria-hidden="true" className="mb-3 text-[12px] font-bold uppercase tracking-wider text-ink-2">
+                    Additional information
+                  </p>
+
+                  <label className="block">
+                    <span className="field-label">
+                      Order notes{" "}
+                      <span className="font-normal text-ink-3">
+                        (optional)
+                      </span>
+                    </span>
+
+                    <textarea
+                      name="notes"
+                      value={details.notes}
+                      onChange={updateDetails}
+                      placeholder="Notes about your order, e.g. special notes for delivery."
+                      rows={4}
+                      className="input"
+                    />
+                  </label>
+                </fieldset>
+              </div>
             </div>
 
-            <div className="grid grid-cols-[1fr_auto] border-t border-slate-200 py-4 font-bold">
-              <span>Total</span>
-              <span>
-                {formatINR(subtotal)}
-              </span>
-            </div>
-          </div>
-
-          {/* PAYMENT METHOD */}
-
-          <div className="mt-8 border-b border-slate-200 pb-6">
-
-            <p className="font-semibold text-slate-900">
-              Online Payment
+            <p className="px-1 text-xs text-ink-2">
+              By placing this order you agree to our{" "}
+              <Link href="/terms" className="font-semibold text-brand hover:underline">Terms of Use</Link>,{" "}
+              <Link href="/shipping-policy" className="font-semibold text-brand hover:underline">Shipping Policy</Link> and{" "}
+              <Link href="/return-refund-policy" className="font-semibold text-brand hover:underline">Return &amp; Refund Policy</Link>.
+              Pesticides must be used only as directed on the label.
             </p>
-
-            <p className="mt-3 bg-white p-4 text-sm leading-6 text-slate-600">
-              Pay securely using UPI. After
-              placing your order, a secure UPI
-              payment QR code will appear.
-            </p>
-          </div>
-
-          {/* PLACE ORDER */}
-
-          <button
-            type="submit"
-            disabled={
-              cartItems.length === 0 ||
-              isLoading
-            }
-            data-testid="place-order-btn"
-            className="mt-6 w-full bg-green-700 px-6 py-3 font-bold text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:bg-slate-300"
-          >
-            {isLoading
-              ? "Creating Payment..."
-              : `Pay ${formatINR(subtotal)}`}
-          </button>
-
-        </aside>
-      </form>
-    </main>
+          </section>
+        </form>
+      </main>
+    </>
   );
 }
