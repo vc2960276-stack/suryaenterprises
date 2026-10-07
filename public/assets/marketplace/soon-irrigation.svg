@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EAF4FB"/><stop offset="1" stop-color="#D3E8F5"/></linearGradient>
+    <linearGradient id="soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8A5A36"/><stop offset="1" stop-color="#5E3A20"/></linearGradient>
+    <linearGradient id="pipe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A4A41"/><stop offset=".35" stop-color="#5D6E64"/><stop offset="1" stop-color="#1E2A23"/></linearGradient>
+    <clipPath id="c"><circle cx="80" cy="80" r="80"/></clipPath>
+  </defs>
+  <g clip-path="url(#c)">
+    <rect width="160" height="160" fill="url(#bg)"/>
+    <path d="M-10 112 Q80 100 170 112 V170 H-10Z" fill="url(#soil)"/>
+    <!-- wet patches -->
+    <g fill="#4A2E18" opacity=".55"><ellipse cx="52" cy="122" rx="18" ry="5"/><ellipse cx="112" cy="122" rx="18" ry="5"/></g>
+    <!-- seedlings -->
+    <g>
+      <path d="M52 120 V100" stroke="#0F7A3D" stroke-width="3" stroke-linecap="round"/>
+      <path d="M52 106 C42 106 36 98 36 90 C46 90 52 98 52 106Z" fill="#3FA75F"/>
+      <path d="M52 102 C62 102 68 94 68 86 C58 86 52 94 52 102Z" fill="#1F8A4C"/>
+      <path d="M112 120 V98" stroke="#0F7A3D" stroke-width="3" stroke-linecap="round"/>
+      <path d="M112 104 C102 104 96 96 96 88 C106 88 112 96 112 104Z" fill="#1F8A4C"/>
+      <path d="M112 100 C122 100 128 92 128 84 C118 84 112 92 112 100Z" fill="#57B66F"/>
+    </g>
+    <!-- drip lateral -->
+    <rect x="-10" y="40" width="180" height="12" rx="6" fill="url(#pipe)"/>
+    <rect x="-10" y="42" width="180" height="2.5" fill="#fff" opacity=".18"/>
+    <!-- emitters -->
+    <g>
+      <rect x="44" y="50" width="16" height="9" rx="3" fill="#FFC72C" stroke="#D99A00"/>
+      <rect x="104" y="50" width="16" height="9" rx="3" fill="#FFC72C" stroke="#D99A00"/>
+    </g>
+    <!-- drops -->
+    <g fill="#2F8FD8">
+      <path d="M52 64 C55 69 56 71 56 73 A4 4 0 0 1 48 73 C48 71 49 69 52 64Z"/>
+      <path d="M52 80 C54 83 55 85 55 86 A3 3 0 0 1 49 86 C49 85 50 83 52 80Z" opacity=".75"/>
+      <path d="M112 64 C115 69 116 71 116 73 A4 4 0 0 1 108 73 C108 71 109 69 112 64Z"/>
+      <path d="M112 80 C114 83 115 85 115 86 A3 3 0 0 1 109 86 C109 85 110 83 112 80Z" opacity=".75"/>
+    </g>
+    <g fill="none" stroke="#7FB8E6" stroke-width="1.4" opacity=".9"><ellipse cx="52" cy="121" rx="8" ry="2.4"/><ellipse cx="112" cy="121" rx="8" ry="2.4"/></g>
+    <!-- valve -->
+    <circle cx="14" cy="46" r="10" fill="#0F7A3D"/><circle cx="14" cy="46" r="4" fill="#E8F5EC"/>
+  </g>
+</svg>

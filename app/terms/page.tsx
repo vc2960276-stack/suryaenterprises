@@ -1,22 +1,7 @@
 import React from 'react';
-import Link from 'next/link';
-import {
-    FileText,
-    ShieldCheck,
-    AlertTriangle,
-    Scale,
-    Leaf,
-    HelpCircle,
-    CheckCircle2,
-    ArrowLeft,
-    Building2,
-    Mail,
-    MapPin,
-    Phone,
-    Lock,
-    Globe
-} from 'lucide-react';
+import { ShieldCheck, Scale, Leaf, HelpCircle, CheckCircle2, Building2, Mail } from 'lucide-react';
 
+import PageHeader from "../components/shop/PageHeader";
 export default function TermsPage() {
     const lastUpdated = "October 24, 2024";
 
@@ -31,58 +16,17 @@ export default function TermsPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-slate-50/50 text-slate-800 font-sans pb-20">
+        <main className="min-h-screen bg-slate-50/50 text-slate-800 font-sans pb-20">
 
-            {/* ================= HERO HEADER ================= */}
-            <section className="relative w-full bg-slate-900 text-white py-16 md:py-20 px-6 md:px-12 lg:px-16 overflow-hidden">
-                {/* Subtle Background Pattern & Gradient Overlay */}
-                <div
-                    className="absolute inset-0 opacity-20 bg-cover bg-center"
-                    style={{
-                        backgroundImage: `url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2000&auto=format&fit=crop')`,
-                    }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-emerald-950/80" />
-
-                <div className="relative z-10 max-w-7xl mx-auto">
-                    {/* Back link */}
-                    <Link
-                        href="/"
-                        className="inline-flex items-center text-xs md:text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-colors mb-6 group"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-1.5 group-hover:-translate-x-1 transition-transform" />
-                        Back to Home
-                    </Link>
-
-                    {/* Pill Badge */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-4 text-xs font-semibold uppercase tracking-wider">
-                        <FileText className="w-3.5 h-3.5" />
-                        Legal Documentation
-                    </div>
-
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3">
-                        Terms & <span className="text-emerald-400">Conditions</span>
-                    </h1>
-
-                    <p className="text-slate-300 text-sm md:text-base max-w-2xl leading-relaxed">
-                        Please read these terms and conditions carefully before using our products, website, or agrochemical services provided by SURYAENTERPRISES  Limited.
-                    </p>
-
-                    <div className="mt-6 flex items-center text-xs text-slate-400 font-medium">
-                        <span>Last Updated: {lastUpdated}</span>
-                        <span className="mx-2">•</span>
-                        <span>Applies to all products & digital services</span>
-                    </div>
-                </div>
-            </section>
+            <PageHeader eyebrow="Legal Documentation" title="Terms & Conditions" subtitle={`Please read these terms and conditions carefully before using our products, website, or agrochemical services provided by SURYAENTERPRISES Limited. Last Updated: ${lastUpdated} • Applies to all products & digital services`} crumbs={[{ label: "Terms of Use" }]} />
 
             {/* ================= MAIN CONTENT ================= */}
-            <main className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 pt-12">
+            <div className="shell pt-3">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
                     {/* SIDEBAR NAVIGATION */}
                     <aside className="lg:col-span-4 space-y-6">
-                        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm sticky top-8">
+                        <div className="bg-white border border-slate-200/80 rounded-lg p-6 shadow-sm sticky top-[calc(var(--header-h)+12px)]">
                             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                                 <Scale className="w-4 h-4 text-emerald-600" />
                                 Table of Contents
@@ -102,7 +46,7 @@ export default function TermsPage() {
                             <hr className="my-6 border-slate-100" />
 
                             {/* Quick Assistance Box */}
-                            <div className="bg-emerald-50/60 border border-emerald-100 rounded-xl p-4">
+                            <div className="bg-emerald-50/60 border border-emerald-100 rounded-lg p-4">
                                 <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm mb-1">
                                     <HelpCircle className="w-4 h-4 text-emerald-600" />
                                     Have questions?
@@ -137,7 +81,7 @@ export default function TermsPage() {
                         </div>
 
                         {/* Section 1 */}
-                        <section id="acceptance" className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-sm">
+                        <section id="acceptance" className="bg-white border border-slate-200/80 rounded-lg p-6 md:p-8 shadow-sm">
                             <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2.5">
                                 <span className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-black">01</span>
                                 Acceptance of Terms
@@ -153,7 +97,7 @@ export default function TermsPage() {
                         </section>
 
                         {/* Section 2 */}
-                        <section id="intellectual-property" className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-sm">
+                        <section id="intellectual-property" className="bg-white border border-slate-200/80 rounded-lg p-6 md:p-8 shadow-sm">
                             <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2.5">
                                 <span className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-black">02</span>
                                 Intellectual Property Rights
@@ -171,7 +115,7 @@ export default function TermsPage() {
                         </section>
 
                         {/* Section 3 - Agrochemical Specific */}
-                        <section id="product-usage" className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-sm">
+                        <section id="product-usage" className="bg-white border border-slate-200/80 rounded-lg p-6 md:p-8 shadow-sm">
                             <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2.5">
                                 <span className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-black">03</span>
                                 Product Usage & Agricultural Safety
@@ -182,7 +126,7 @@ export default function TermsPage() {
                                 </p>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
-                                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                                    <div className="bg-slate-50 border border-slate-100 rounded-lg p-4">
                                         <div className="flex items-center gap-2 font-semibold text-slate-900 text-sm mb-1">
                                             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                                             Dosage Instructions
@@ -192,7 +136,7 @@ export default function TermsPage() {
                                         </p>
                                     </div>
 
-                                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                                    <div className="bg-slate-50 border border-slate-100 rounded-lg p-4">
                                         <div className="flex items-center gap-2 font-semibold text-slate-900 text-sm mb-1">
                                             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                                             Safety Gear
@@ -203,14 +147,14 @@ export default function TermsPage() {
                                     </div>
                                 </div>
 
-                                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 p-3.5 rounded-xl font-medium">
+                                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 p-3.5 rounded-lg font-medium">
                                     <strong>Warning:</strong> Improper storage, mixing with unapproved chemicals, or application during adverse weather conditions is at the user&apos;s sole risk.
                                 </p>
                             </div>
                         </section>
 
                         {/* Section 4 */}
-                        <section id="disclaimer" className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-sm">
+                        <section id="disclaimer" className="bg-white border border-slate-200/80 rounded-lg p-6 md:p-8 shadow-sm">
                             <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2.5">
                                 <span className="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-sm font-black">04</span>
                                 Disclaimer & Yield Warranties
@@ -232,7 +176,7 @@ export default function TermsPage() {
                         </section>
 
                         {/* Section 5 */}
-                        <section id="limitation" className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-sm">
+                        <section id="limitation" className="bg-white border border-slate-200/80 rounded-lg p-6 md:p-8 shadow-sm">
                             <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2.5">
                                 <span className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-black">05</span>
                                 Limitation of Liability
@@ -241,14 +185,14 @@ export default function TermsPage() {
                                 <p>
                                     To the maximum extent permitted by applicable law, SURYAENTERPRISES  Limited shall not be liable for any indirect, incidental, consequential, or punitive damages resulting from product misuse, crop loss, soil contamination due to improper dosage, or unauthorized handling.
                                 </p>
-                                <p className="text-xs md:text-sm bg-slate-50 p-4 rounded-xl border border-slate-200/60 font-mono text-slate-700">
+                                <p className="text-xs md:text-sm bg-slate-50 p-4 rounded-lg border border-slate-200/60 font-mono text-slate-700">
                                     Total cumulative liability for any verified defective batch shall be limited strictly to the replacement of the product or refund of the purchase price.
                                 </p>
                             </div>
                         </section>
 
                         {/* Section 6 */}
-                        <section id="governing-law" className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-sm">
+                        <section id="governing-law" className="bg-white border border-slate-200/80 rounded-lg p-6 md:p-8 shadow-sm">
                             <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2.5">
                                 <span className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-black">06</span>
                                 Governing Law & Jurisdiction
@@ -261,7 +205,7 @@ export default function TermsPage() {
                         </section>
 
                         {/* Section 7 - Contact */}
-                        <section id="contact" className="bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-3xl p-8 md:p-10 shadow-md">
+                        <section id="contact" className="bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-lg p-8 md:p-6">
                             <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-2">
                                 <Leaf className="w-4 h-4" />
                                 SURYAENTERPRISES  Limited
@@ -274,7 +218,7 @@ export default function TermsPage() {
                             </p>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs md:text-sm">
-                                <div className="flex items-start gap-3 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10">
+                                <div className="flex items-start gap-3 bg-white/10 backdrop-blur-md p-4 rounded-lg border border-white/10">
                                     <Building2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                                     <div>
                                         <span className="text-slate-400 block text-xs">Headquarters</span>
@@ -282,7 +226,7 @@ export default function TermsPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-3 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10">
+                                <div className="flex items-start gap-3 bg-white/10 backdrop-blur-md p-4 rounded-lg border border-white/10">
                                     <Mail className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                                     <div>
                                         <span className="text-slate-400 block text-xs">Email Legal Team</span>
@@ -295,8 +239,8 @@ export default function TermsPage() {
                     </div>
 
                 </div>
-            </main>
+            </div>
 
-        </div>
+        </main>
     );
 }

@@ -2,166 +2,200 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, ShoppingCart } from "lucide-react";
-import { useState } from "react";
-import { getProduct, formatINR } from "../products/data/products";
+import { useRouter } from "next/navigation";
+import { Heart, ShieldCheck, ShoppingCart, Trash2 } from "lucide-react";
+import Breadcrumbs from "../components/shop/Breadcrumbs";
+import EmptyState from "../components/shop/EmptyState";
+import QuantityStepper from "../components/shop/QuantityStepper";
+import StockBadge from "../components/shop/StockBadge";
+import { SITE } from "../config/site";
+import { categoryByData } from "../config/taxonomy";
+import { removeFromCart, setQty, useCart, useCartHydrated } from "../lib-shop/cart";
+import { formatPrice } from "../lib-shop/format";
+import { toast } from "../lib-shop/toast";
+import { addToWishlist } from "../lib-shop/wishlist";
+import { getProduct } from "../products/data/products";
 
-function readCart() {
-  if (typeof window === "undefined") return {};
-  const savedCart = window.localStorage.getItem("surya-cart");
-  return savedCart ? JSON.parse(savedCart) : {};
+function CartSkeleton() {
+  return (
+    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_360px]" aria-busy="true" aria-label="Loading cart">
+      <div className="rounded-lg border border-line bg-white p-4">
+        {[0, 1].map((i) => (
+          <div key={i} className="flex gap-4 border-b border-line py-4 last:border-0">
+            <div className="skeleton h-24 w-24" />
+            <div className="flex-1">
+              <div className="skeleton h-4 w-3/4" />
+              <div className="skeleton mt-2 h-3 w-24" />
+              <div className="skeleton mt-4 h-5 w-20" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="skeleton h-56 rounded-lg" />
+    </div>
+  );
 }
 
 export default function CartPage() {
-  const [cart, setCart] = useState(readCart);
-  const cartItems = Object.entries(cart)
-    .map(([sku, quantity]) => ({ product: getProduct(sku), quantity }))
-    .filter((item) => item.product);
-  const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
-  const subtotal = cartItems.reduce(
-    (total, item) => total + item.product.price * item.quantity,
-    0
-  );
+  const router = useRouter();
+  const cart = useCart();
+  const hydrated = useCartHydrated();
 
-  const updateQuantity = (sku, change) => {
-    setCart((currentCart) => {
-      const nextQuantity = (currentCart[sku] || 0) + change;
-      const nextCart = { ...currentCart };
-      if (nextQuantity > 0) {
-        nextCart[sku] = nextQuantity;
-      } else {
-        delete nextCart[sku];
-      }
-      window.localStorage.setItem("surya-cart", JSON.stringify(nextCart));
-      window.dispatchEvent(new Event("surya-cart-updated"));
-      return nextCart;
-    });
-  };
+  const items = Object.entries(cart)
+    .map(([sku, quantity]) => ({ product: getProduct(sku), quantity: Number(quantity) || 0 }))
+    .filter((item) => item.product && item.quantity > 0);
+  const itemCount = items.reduce((t, i) => t + i.quantity, 0);
+  const subtotal = items.reduce((t, i) => t + i.product.price * i.quantity, 0);
+  const freeAt = SITE.delivery.freeShippingThreshold;
 
   return (
-    <main className="min-h-screen bg-white px-4 py-14 text-slate-800 sm:px-8 md:px-12 lg:px-20">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-12 flex flex-wrap items-end justify-between gap-5">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-700">
-              Shopping cart
-            </p>
-            <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
-              Your Cart
-            </h1>
-          </div>
-          <Link
-            href="/products"
-            className="font-semibold text-green-700 underline-offset-4 hover:underline"
-          >
-            Continue shopping
-          </Link>
-        </header>
+    <main className="shell py-3">
+      <Breadcrumbs className="mb-2" items={[{ label: "Home", href: "/" }, { label: "Cart" }]} />
 
-        {cartItems.length === 0 ? (
-          <div className="border border-slate-200 px-6 py-20 text-center" data-testid="empty-cart">
-            <ShoppingCart className="mx-auto h-12 w-12 text-green-700" aria-hidden="true" />
-            <h2 className="mt-5 text-2xl font-bold text-slate-900">Your cart is empty</h2>
-            <p className="mt-2 text-slate-500">Add products to see them here.</p>
-            <Link
-              href="/products"
-              className="mt-7 inline-flex bg-green-700 px-6 py-3 font-bold text-white hover:bg-green-800"
-            >
-              Browse products
-            </Link>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-hidden border-y border-slate-200">
-              <div className="hidden grid-cols-[48px_minmax(220px,1fr)_120px_180px_140px] gap-6 border-b border-slate-200 px-6 py-4 text-xs font-medium uppercase tracking-wide text-slate-500 md:grid">
-                <span />
-                <span>Product</span>
-                <span>Price</span>
-                <span>Quantity</span>
-                <span>Subtotal</span>
-              </div>
-
-              {cartItems.map((item) => (
-                <div
-                  key={item.product.sku}
-                  className="grid gap-4 border-b border-slate-200 px-4 py-6 md:grid-cols-[48px_minmax(220px,1fr)_120px_180px_140px] md:items-center md:gap-6 md:px-6"
-                >
-                  <button
-                    type="button"
-                    onClick={() => updateQuantity(item.product.sku, -item.quantity)}
-                    aria-label={`Remove ${item.product.name}`}
-                    className="flex h-9 w-9 items-center justify-center bg-slate-50 text-xl text-green-700 hover:bg-green-50"
-                  >
-                    ×
-                  </button>
-                  <div className="flex items-center gap-4">
-                    <div className="relative h-20 w-20 shrink-0 bg-white">
-                      <Image
-                        src={item.product.image}
-                        alt={item.product.name}
-                        fill
-                        sizes="80px"
-                        className="object-contain"
+      {!hydrated ? (
+        <CartSkeleton />
+      ) : items.length === 0 ? (
+        <EmptyState
+          icon={ShoppingCart}
+          title="Your cart is empty"
+          actions={[
+            { label: "Browse products", href: "/products" },
+            { label: "View wishlist", href: "/wishlist" },
+          ]}
+        >
+          <p>Add products to see them here.</p>
+        </EmptyState>
+      ) : (
+        <div className="grid gap-3 pb-20 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:pb-0">
+          <section aria-labelledby="cart-title" className="rounded-lg border border-line bg-white">
+            <div className="flex items-center justify-between border-b border-line px-4 py-3">
+              <h1 id="cart-title" className="font-display text-lg font-extrabold text-ink">
+                My Cart <span className="font-sans text-sm font-medium text-ink-2">({itemCount} {itemCount === 1 ? "item" : "items"})</span>
+              </h1>
+              <Link href="/products" className="text-[13px] font-semibold text-brand hover:underline">
+                Continue shopping
+              </Link>
+            </div>
+            <ul>
+              {items.map(({ product: p, quantity }) => {
+                const cat = categoryByData[p.category];
+                return (
+                  <li key={p.sku} className="flex gap-3 border-b border-line px-4 py-4 last:border-0 sm:gap-5">
+                    <div className="flex shrink-0 flex-col items-center gap-3">
+                      <Link href={`/p/${p.slug}`} tabIndex={-1} aria-hidden="true" className="relative block h-20 w-20 overflow-hidden rounded-md border border-line bg-white sm:h-28 sm:w-28">
+                        <Image src={p.image} alt="" fill sizes="112px" className="object-contain p-1" />
+                      </Link>
+                      <QuantityStepper
+                        value={quantity}
+                        min={1}
+                        max={p.stock}
+                        size="touch"
+                        itemName={p.name}
+                        onChange={(next) => setQty(p.sku, next, p.stock)}
                       />
                     </div>
-                    <h2 className="font-bold leading-6 text-slate-800">{item.product.name}</h2>
-                  </div>
-                  <div className="font-bold text-slate-800">
-                    <span className="mr-2 text-xs font-normal text-slate-500 md:hidden">Price</span>
-                    {formatINR(item.product.price)}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-slate-500 md:hidden">Quantity</span>
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(item.product.sku, -1)}
-                      aria-label="Decrease quantity"
-                      className="flex h-9 w-9 items-center justify-center bg-slate-50 text-green-800 hover:bg-green-50"
-                    >
-                      <Minus className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                    <span className="flex h-9 min-w-12 items-center justify-center border border-slate-200 font-semibold">
-                      {item.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(item.product.sku, 1)}
-                      aria-label="Increase quantity"
-                      className="flex h-9 w-9 items-center justify-center bg-green-700 text-white hover:bg-green-800"
-                    >
-                      <Plus className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                  </div>
-                  <div className="font-bold text-green-700">
-                    <span className="mr-2 text-xs font-normal text-slate-500 md:hidden">Subtotal</span>
-                    {formatINR(item.product.price * item.quantity)}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <aside className="mt-12 ml-auto max-w-md bg-slate-50 p-8">
-              <h2 className="text-xl font-bold text-slate-900">Cart Totals</h2>
-              <div className="mt-5 border-t border-slate-200 pt-5">
-                <div className="flex justify-between text-sm text-slate-500">
-                  <span>Subtotal</span>
-                  <span>{formatINR(subtotal)}</span>
-                </div>
-                <div className="mt-6 flex justify-between border-t border-slate-200 pt-5 font-bold text-slate-900">
-                  <span>Total</span>
-                  <span>{formatINR(subtotal)}</span>
-                </div>
-              </div>
-              <Link
-                href="/checkout"
-                className="mt-7 flex w-full items-center justify-center bg-green-700 px-5 py-3 text-center font-bold text-white transition hover:bg-green-800"
-              >
-                Proceed To Checkout
+                    <div className="min-w-0 flex-1">
+                      <Link href={`/p/${p.slug}`} className="line-clamp-2 text-[14px] font-medium text-ink hover:text-brand">
+                        {p.name}
+                      </Link>
+                      <p className="mt-0.5 text-xs text-ink-2">
+                        {p.unit}
+                        {cat ? <> · {cat.name}</> : null}
+                      </p>
+                      <p className="mt-0.5 text-xs text-ink-2">Seller: {SITE.name}</p>
+                      <div className="mt-2 flex flex-wrap items-baseline gap-2 tabular-nums">
+                        <span className="text-lg font-bold text-ink">{formatPrice(p.price * quantity)}</span>
+                        {quantity > 1 && <span className="text-xs text-ink-2">{formatPrice(p.price)} each</span>}
+                      </div>
+                      <StockBadge stock={p.stock} />
+                      <div className="mt-2 flex flex-wrap gap-x-3 text-[13px] font-semibold uppercase tracking-wide">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            addToWishlist(p.sku);
+                            removeFromCart(p.sku);
+                            toast(`Saved for later: ${p.name}`, { action: { label: "Wishlist", href: "/wishlist" } });
+                          }}
+                          aria-label={`Save ${p.name} for later`}
+                          className="-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded px-2 text-ink hover:text-brand lg:min-h-9"
+                        >
+                          <Heart className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+                          Save for later
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            removeFromCart(p.sku);
+                            toast(`Removed ${p.name} from cart`);
+                          }}
+                          className="inline-flex min-h-11 items-center gap-1.5 rounded px-2 text-ink hover:text-danger lg:min-h-9"
+                          aria-label={`Remove ${p.name} from cart`}
+                        >
+                          <Trash2 className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="hidden justify-end border-t border-line px-4 py-3 lg:flex">
+              <Link href="/checkout" className="btn btn-buy h-12 px-10 text-[15px]">
+                Place order
               </Link>
-            </aside>
-          </>
-        )}
-      </div>
+            </div>
+          </section>
+
+          <aside aria-labelledby="price-title" className="space-y-3 lg:sticky lg:top-[calc(var(--header-h)+12px)]">
+            <section className="rounded-lg border border-line bg-white">
+              <h2 id="price-title" className="border-b border-line px-4 py-3 text-xs font-bold uppercase tracking-wider text-ink-2">
+                Price details
+              </h2>
+              <dl className="space-y-3 px-4 py-4 text-[14px] tabular-nums">
+                <div className="flex justify-between">
+                  <dt>
+                    Price ({itemCount} {itemCount === 1 ? "item" : "items"})
+                  </dt>
+                  <dd>{formatPrice(subtotal)}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Delivery charges</dt>
+                  <dd className="text-ink-2">{SITE.delivery.cartDeliveryLabel}</dd>
+                </div>
+                <div className="flex justify-between border-t border-dashed border-line pt-3 text-base font-bold text-ink">
+                  <dt>Total amount</dt>
+                  <dd>{formatPrice(subtotal)}</dd>
+                </div>
+              </dl>
+              {freeAt ? (
+                <p className="border-t border-line px-4 py-3 text-xs font-medium text-brand">
+                  {subtotal >= freeAt
+                    ? "Your order qualifies for free delivery."
+                    : `Add ${formatPrice(freeAt - subtotal)} more for free delivery.`}
+                </p>
+              ) : null}
+            </section>
+            <p className="flex items-start gap-2 px-1 text-xs text-ink-2">
+              <ShieldCheck className="h-4 w-4 shrink-0 text-brand" strokeWidth={1.75} aria-hidden="true" />
+              Safe and secure payments — UPI via PayU.
+            </p>
+          </aside>
+
+          {/* Mobile sticky place-order bar (above the bottom nav) */}
+          <div className="fixed inset-x-0 bottom-[var(--bottom-nav-h)] z-40 flex items-center justify-between gap-3 border-t border-line bg-white px-3 py-2 lg:hidden">
+            <div className="tabular-nums">
+              <p className="text-lg font-bold leading-tight text-ink">{formatPrice(subtotal)}</p>
+              <a href="#price-title" className="text-xs font-semibold text-brand">
+                View price details
+              </a>
+            </div>
+            <button type="button" onClick={() => router.push("/checkout")} className="btn btn-buy h-11 px-8">
+              Place order
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

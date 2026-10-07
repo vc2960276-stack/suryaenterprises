@@ -1,26 +1,239 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* ------------------------------------------------------------------
+   Surya Enterprises — "Bazaar, but trustworthy" marketplace tokens
+   ------------------------------------------------------------------ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand: #0f7a3d;
+  --color-brand-hover: #0b6331;
+  --color-brand-deep: #0a4f28;
+  --color-brand-tint: #e8f5ec;
+  --color-harvest: #ffc72c;
+  --color-harvest-hover: #f5b800;
+  --color-harvest-tint: #fff6d9;
+  --color-earth: #7a4e2d;
+  --color-canvas: #f1f3f2;
+  --color-line: #e3e7e4;
+  --color-ink: #14211a;
+  --color-ink-2: #4a5a50;
+  --color-ink-3: #6b7a70;
+  --color-rating: #1f8a4c;
+  --color-danger: #b42318;
+  --color-info: #1d4ed8;
 }
 
-@media (prefers-color-scheme: dark) {
+:root {
+  --background: #f1f3f2;
+  --foreground: #14211a;
+  /* Sticky header height. Header.jsx measures the real header and overwrites
+     this; the values here are only first-paint fallbacks per breakpoint. */
+  --header-h: 129px;
+  /* Mobile bottom nav: 56px row + 1px top border + iOS safe area. Every
+     fixed action bar sits at bottom: var(--bottom-nav-h) so it is flush. */
+  --bottom-nav-h: calc(3.5rem + 1px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 1024px) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --header-h: 104px;
+    --bottom-nav-h: 0px;
   }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 12px);
+  /* Reserve the scrollbar gutter so locking scroll (sheets, drawer) doesn't shift the layout. */
+  scrollbar-gutter: stable;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+:focus-visible {
+  outline: 2px solid #0f7a3d;
+  outline-offset: 2px;
+}
+
+.on-dark :focus-visible,
+.on-dark:focus-visible {
+  outline-color: #ffc72c;
+}
+
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 2.5rem;
+    padding: 0 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1;
+    white-space: nowrap;
+    transition: background-color 150ms, color 150ms, border-color 150ms, box-shadow 150ms;
+    cursor: pointer;
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .btn-cart {
+    background: var(--color-harvest);
+    color: var(--color-ink);
+  }
+  .btn-cart:hover {
+    background: var(--color-harvest-hover);
+  }
+  .btn-buy {
+    background: var(--color-brand);
+    color: #fff;
+  }
+  .btn-buy:hover {
+    background: var(--color-brand-hover);
+  }
+  .btn-outline {
+    background: #fff;
+    color: var(--color-ink);
+    border: 1px solid var(--color-line);
+  }
+  .btn-outline:hover {
+    border-color: var(--color-brand);
+    color: var(--color-brand);
+  }
+  .btn-disabled,
+  .btn:disabled {
+    background: #e9ecea;
+    color: #6b7a70;
+    cursor: not-allowed;
+  }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-earth);
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-line);
+    background: #fff;
+    padding: 0.25rem 0.75rem;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+  .panel {
+    border-radius: 8px;
+    border: 1px solid var(--color-line);
+    background: #fff;
+  }
+  .shell {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 1440px;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  @media (min-width: 1024px) {
+    .shell {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+}
+
+@layer utilities {
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #eceeed 0%, #f6f7f6 50%, #eceeed 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    border-radius: 6px;
+  }
+  .toast-in {
+    animation: toast-in 180ms ease-out;
+  }
+  .fade-in {
+    animation: fade-in 160ms ease-out;
+  }
+  .sheet-in {
+    animation: sheet-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes sheet-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dual-thumb price slider */
+.range-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  height: 18px;
+  width: 18px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid #0f7a3d;
+  box-shadow: 0 1px 3px rgba(20, 33, 26, 0.25);
+  cursor: grab;
+}
+.range-thumb::-moz-range-thumb {
+  pointer-events: auto;
+  height: 14px;
+  width: 14px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid #0f7a3d;
+  box-shadow: 0 1px 3px rgba(20, 33, 26, 0.25);
+  cursor: grab;
+}
+.range-thumb:focus-visible {
+  outline: none;
+}
+.range-thumb:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid #0f7a3d;
+  outline-offset: 2px;
 }

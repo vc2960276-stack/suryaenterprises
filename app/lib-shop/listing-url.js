@@ -1,0 +1,34 @@
+// Builds listing URLs (category + search pages) from normalized filter state.
+// Shared by server components (links) and client components (router.push).
+
+export function listingSearchParams(state) {
+  const sp = new URLSearchParams();
+  if (state.q) sp.set("q", state.q);
+  if (state.category) sp.set("category", state.category);
+  if (state.min != null) sp.set("min", String(state.min));
+  if (state.max != null) sp.set("max", String(state.max));
+  if (state.rating) sp.set("rating", String(state.rating));
+  for (const u of state.units ?? []) sp.append("unit", u);
+  for (const a of state.ais ?? []) sp.append("ai", a);
+  if (state.inStock) sp.set("stock", "1");
+  if (state.sort && state.sort !== "relevance") sp.set("sort", state.sort);
+  if (state.page && state.page > 1) sp.set("page", String(state.page));
+  return sp;
+}
+
+export function listingHref(basePath, state, overrides = {}) {
+  const next = { ...state, page: 1, ...overrides };
+  const qs = listingSearchParams(next).toString();
+  return `${basePath}${qs ? `?${qs}` : ""}`;
+}
+
+export const toggleValue = (list = [], value) =>
+  list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+
+export const PRICE_PRESETS = [
+  { label: "Under ₹500", min: null, max: 500 },
+  { label: "₹500 – ₹1,000", min: 500, max: 1000 },
+  { label: "₹1,000 – ₹2,500", min: 1000, max: 2500 },
+  { label: "₹2,500 – ₹5,000", min: 2500, max: 5000 },
+  { label: "Over ₹5,000", min: 5000, max: null },
+];

@@ -1,26 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
-import {
-    Map,
-    Leaf,
-    FlaskConical,
-    Sprout,
-    Bug,
-    Factory,
-    ShieldCheck,
-    FileText,
-    ArrowLeft,
-    Building2,
-    Mail,
-    Users,
-    TestTube,
-    Truck,
-    HelpCircle,
-    Briefcase,
-    ChevronRight,
-    Globe
-} from 'lucide-react';
+import { FlaskConical, Factory, ShieldCheck, Building2, ChevronRight, Globe } from 'lucide-react';
 
+import PageHeader from "../components/shop/PageHeader";
 export default function SitemapPage() {
     const categories = [
         {
@@ -32,9 +14,9 @@ export default function SitemapPage() {
             hoverBg: "hover:border-emerald-300",
             links: [
                 { name: "Home Page", href: "/", desc: "Main landing page & company highlight" },
-                { name: "About Us", href: "/#about", desc: "Our 25+ years history, mission & values" },
-                { name: "Manufacturing Process", href: "/#manufacturing", desc: "4-step quality manufacturing workflow" },
-                { name: "Careers & Culture", href: "/careers", desc: "Join India's leading agrochemical team" },
+                { name: "About Us", href: "/aboutUs", desc: "Our 25+ years history, mission & values" },
+                { name: "Manufacturing Process", href: "/quality-assurance", desc: "4-step quality manufacturing workflow" },
+                { name: "Careers & Culture", href: "/career", desc: "Join India's leading agrochemical team" },
                 { name: "Contact & Headquarters", href: "/contact", desc: "Get in touch with our Gujarat offices" },
             ]
         },
@@ -47,10 +29,12 @@ export default function SitemapPage() {
             hoverBg: "hover:border-indigo-300",
             links: [
                 { name: "All Products Overview", href: "/products", desc: "Complete catalog of agricultural solutions" },
-                { name: "Agro Chemicals", href: "/products/chemicals", desc: "State-of-the-art precision chemicals" },
-                { name: "Fertilizers & Nutrients", href: "/products/fertilizers", desc: "Optimal plant nutrition & growth enhancers" },
-                { name: "Pesticides & Protection", href: "/products/pesticides", desc: "Crop-safeguarding eco-pesticides" },
-                { name: "Plant Growth Regulators", href: "/products/growth-regulators", desc: "Advanced bio-stimulants for yields" },
+                { name: "Insecticides", href: "/c/insecticides", desc: "Crop protection solutions for managing harmful insects" },
+                { name: "Herbicides", href: "/c/herbicides", desc: "Responsible weed management products" },
+                { name: "Fungicides", href: "/c/fungicides", desc: "Focused crop care for managing fungal pressure" },
+                { name: "Plant Growth Regulators", href: "/c/pgr-and-others", desc: "PGR and specialty solutions for productive crops" },
+                { name: "Institutional Products", href: "/products/institutional", desc: "High-purity technical grades for bulk buyers" },
+                { name: "Search, Cart & Wishlist", href: "/search", desc: "Find products, review your cart and saved items" },
             ]
         },
         {
@@ -61,10 +45,10 @@ export default function SitemapPage() {
             borderColor: "border-amber-100",
             hoverBg: "hover:border-amber-300",
             links: [
-                { name: "Formulation R&D", href: "/process/formulation", desc: "Extensive crop research & chemical design" },
-                { name: "State Facilities & Production", href: "/process/production", desc: "Modern factories adhering to standards" },
-                { name: "Quality Control & Testing", href: "/process/testing", desc: "Rigorous laboratory testing for safety" },
-                { name: "Pan-India Distribution Network", href: "/process/distribution", desc: "Covering 22+ states efficiently" },
+                { name: "Formulation R&D", href: "/quality-assurance", desc: "Extensive crop research & chemical design" },
+                { name: "State Facilities & Production", href: "/quality-assurance", desc: "Modern factories adhering to standards" },
+                { name: "Quality Control & Testing", href: "/quality-assurance", desc: "Rigorous laboratory testing for safety" },
+                { name: "Pan-India Distribution Network", href: "/contact", desc: "Covering 22+ states efficiently" },
             ]
         },
         {
@@ -77,66 +61,31 @@ export default function SitemapPage() {
             links: [
                 { name: "Terms & Conditions", href: "/terms", desc: "Legal rules & product disclaimers" },
                 { name: "Privacy Policy", href: "/privacy", desc: "Data protection & privacy commitment" },
-                { name: "Safety Data Sheets (SDS)", href: "/compliance/sds", desc: "Material hazard & handling documentation" },
-                { name: "Quality Certifications", href: "/compliance/certifications", desc: "ISO & regulatory approvals" },
+                { name: "Safety Data Sheets (SDS)", href: "/quality-assurance", desc: "Material hazard & handling documentation" },
+                { name: "Quality Certifications", href: "/quality-assurance", desc: "ISO & regulatory approvals" },
             ]
         }
     ];
 
     return (
-        <div className="min-h-screen bg-slate-50/50 text-slate-800 font-sans pb-20">
+        <main className="min-h-screen bg-slate-50/50 text-slate-800 font-sans pb-20">
 
-            {/* ================= HERO HEADER ================= */}
-            <section className="relative w-full bg-slate-900 text-white py-16 md:py-20 px-6 md:px-12 lg:px-16 overflow-hidden">
-                {/* Background Image Overlay */}
-                <div
-                    className="absolute inset-0 opacity-20 bg-cover bg-center"
-                    style={{
-                        backgroundImage: `url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2000&auto=format&fit=crop')`,
-                    }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-emerald-950/80" />
-
-                <div className="relative z-10 max-w-7xl mx-auto">
-                    {/* Back link */}
-                    <Link
-                        href="/"
-                        className="inline-flex items-center text-xs md:text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-colors mb-6 group"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-1.5 group-hover:-translate-x-1 transition-transform" />
-                        Back to Home
-                    </Link>
-
-                    {/* Pill Badge */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-4 text-xs font-semibold uppercase tracking-wider">
-                        <Map className="w-3.5 h-3.5" />
-                        Site Navigation
-                    </div>
-
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3">
-                        Web <span className="text-emerald-400">Sitemap</span>
-                    </h1>
-
-                    <p className="text-slate-300 text-sm md:text-base max-w-2xl leading-relaxed">
-                        Explore the complete structure of SURYAENTERPRISE Limited. Find quick links to our agricultural products, manufacturing processes, corporate information, and compliance disclosures.
-                    </p>
-                </div>
-            </section>
+            <PageHeader eyebrow="Site Navigation" title="Web Sitemap" subtitle="Explore the complete structure of SURYAENTERPRISE Limited. Find quick links to our agricultural products, manufacturing processes, corporate information, and compliance disclosures." crumbs={[{ label: "Sitemap" }]} />
 
             {/* ================= MAIN SITEMAP CONTENT ================= */}
-            <main className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 pt-12">
+            <div className="shell pt-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {categories.map((cat, idx) => {
                         const Icon = cat.icon;
                         return (
                             <div
                                 key={idx}
-                                className={`bg-white border ${cat.borderColor} rounded-3xl p-6 md:p-8 shadow-sm transition-all duration-300 flex flex-col justify-between`}
+                                className={`bg-white border ${cat.borderColor} rounded-lg p-6 md:p-8 shadow-sm transition-all duration-300 flex flex-col justify-between`}
                             >
                                 <div>
                                     {/* Category Header */}
                                     <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                                        <div className={`p-3 rounded-2xl ${cat.badgeBg}`}>
+                                        <div className={`p-3 rounded-lg ${cat.badgeBg}`}>
                                             <Icon className="w-6 h-6" />
                                         </div>
                                         <div>
@@ -153,7 +102,7 @@ export default function SitemapPage() {
                                             <Link
                                                 key={lIdx}
                                                 href={link.href}
-                                                className="group flex items-start justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
+                                                className="group flex items-start justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
                                             >
                                                 <div>
                                                     <div className="text-sm font-semibold text-slate-800 group-hover:text-emerald-600 transition-colors flex items-center gap-1.5">
@@ -174,7 +123,7 @@ export default function SitemapPage() {
                 </div>
 
                 {/* ================= BOTTOM INFO BOX ================= */}
-                <div className="mt-12 bg-emerald-50/60 border border-emerald-200/60 rounded-3xl p-8 text-center max-w-4xl mx-auto">
+                <div className="mt-12 bg-emerald-50/60 border border-emerald-200/60 rounded-lg p-8 text-center max-w-4xl mx-auto">
                     <div className="flex justify-center mb-3 text-emerald-600">
                         <Globe className="w-8 h-8" />
                     </div>
@@ -186,13 +135,13 @@ export default function SitemapPage() {
                     </p>
                     <Link
                         href="/contact"
-                        className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs md:text-sm px-6 py-3 rounded-xl transition-all shadow-md shadow-emerald-200"
+                        className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs md:text-sm px-6 py-3 rounded-lg transition-all shadow-emerald-200"
                     >
                         Contact Help Desk
                     </Link>
                 </div>
-            </main>
+            </div>
 
-        </div>
+        </main>
     );
 }

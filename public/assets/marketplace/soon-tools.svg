@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FDF4E3"/><stop offset="1" stop-color="#F3DFBC"/></linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E4E9E6"/><stop offset="1" stop-color="#9AA6A0"/></linearGradient>
+    <clipPath id="c"><circle cx="80" cy="80" r="80"/></clipPath>
+  </defs>
+  <g clip-path="url(#c)">
+    <rect width="160" height="160" fill="url(#bg)"/>
+    <path d="M-10 128 Q80 112 170 128 V170 H-10Z" fill="#C8955E" opacity=".55"/>
+    <!-- spade -->
+    <g transform="rotate(-35 80 80)">
+      <rect x="76" y="14" width="8" height="88" rx="3" fill="#A8743F"/>
+      <rect x="70" y="10" width="20" height="8" rx="4" fill="#7A4E2D"/>
+      <path d="M66 100 H94 V122 C94 136 86 144 80 148 C74 144 66 136 66 122Z" fill="url(#steel)" stroke="#6F7C75" stroke-width="1.5"/>
+      <rect x="74" y="96" width="12" height="10" rx="2" fill="#6F7C75"/>
+    </g>
+    <!-- hoe / sickle -->
+    <g transform="rotate(35 80 80)">
+      <rect x="76" y="16" width="8" height="96" rx="3" fill="#0F7A3D"/>
+      <rect x="76" y="16" width="8" height="18" rx="3" fill="#0B6331"/>
+      <path d="M80 112 C96 112 108 120 112 134 L100 134 C96 126 88 122 80 122Z" fill="url(#steel)" stroke="#6F7C75" stroke-width="1.5"/>
+    </g>
+    <!-- trowel -->
+    <g transform="translate(118 108) rotate(20)">
+      <rect x="-4" y="-30" width="8" height="18" rx="3" fill="#FFC72C"/>
+      <rect x="-1.5" y="-14" width="3" height="8" fill="#6F7C75"/>
+      <path d="M-9 -6 H9 L4 18 Q0 24 -4 18Z" fill="url(#steel)" stroke="#6F7C75" stroke-width="1.2"/>
+    </g>
+    <g fill="#3FA75F"><path d="M30 126 C28 116 32 108 40 104 C40 114 36 122 30 126Z"/><path d="M34 128 C38 120 44 116 52 116 C48 124 42 128 34 128Z"/></g>
+  </g>
+</svg>

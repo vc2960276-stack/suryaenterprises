@@ -2,13 +2,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
-import { 
-  Users, Leaf, Target, HeartHandshake, ChevronRight, 
-  MapPin, Briefcase, Clock, Award, Sparkles, Filter,
-  X, Search, TrendingUp, Globe, Zap
-} from 'lucide-react';
+import { Users, Leaf, Target, HeartHandshake, ChevronRight, MapPin, Briefcase, Clock, Award, Sparkles, Filter, Search, TrendingUp, Globe, Zap } from 'lucide-react';
 
+import PageHeader from "../components/shop/PageHeader";
 const CareerContent = () => {
   const [selectedLocation, setSelectedLocation] = useState('All Job Location');
   const [selectedPosition, setSelectedPosition] = useState('All Opening Position');
@@ -160,60 +156,24 @@ const CareerContent = () => {
   const filteredJobs = filterJobs();
 
   return (
-    <div className="bg-linear-to-b from-green-50 to-white">
-      {/* Hero Section */}
-      <div className="relative h-112.5 md:h-137.5 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="/assets/images/career-banner.jpg"
-            alt="Career at SURYAENTERPRISES"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-linear-to-r from-green-900/90 via-green-800/70 to-emerald-900/80"></div>
-        </div>
-
-        <div className="relative h-full max-w-10xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
-          <div className="text-white max-w-3xl">
-            <div className="inline-flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-white/30">
-              <Briefcase className="w-4 h-4 mr-2 text-amber-300" />
-              <span className="text-sm font-medium">Join Our Team</span>
-            </div>
-            
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              Cultivate Your{' '}
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-amber-300 to-yellow-400">
-                Career
-              </span>
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-gray-100 mb-4 font-light max-w-2xl">
-              Grow with SURYAENTERPRISES – Where innovation meets opportunity
-            </p>
-            
-            <div className="w-24 h-1 bg-amber-400 rounded-full mt-8"></div>
-          </div>
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-white to-transparent"></div>
-      </div>
+    <main className="pb-3">
+      <PageHeader eyebrow="Join Our Team" title="Cultivate Your Career" subtitle="Grow with SURYAENTERPRISES – Where innovation meets opportunity" image="/assets/images/career-banner.jpg" crumbs={[{ label: "Career" }]} />
 
       {/* Main Content */}
-      <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+      <div className="shell py-3">
         
         {/* Join Our Team Section */}
-        <div className="text-center max-w-4xl mx-auto mb-16">
+        <div className="text-center max-w-4xl mx-auto mb-6">
           <div className="inline-flex items-center justify-center p-2 bg-green-100 rounded-full mb-4">
             <Users className="w-6 h-6 text-green-700" />
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+          <h2 className="font-display text-[22px] md:text-2xl font-bold text-gray-900 mb-6">
             Join Our Team and{' '}
             <span className="text-transparent bg-clip-text bg-linear-to-r from-green-700 to-emerald-600">
               Cultivate Your Career
             </span>
           </h2>
-          <p className="text-xl text-gray-600 leading-relaxed">
+          <p className="text-[15px] text-gray-600 leading-relaxed">
             At SURYAENTERPRISES, we believe in nurturing not just crops, but also careers. We&apos;re on a mission to revolutionize
             agriculture through innovation, sustainability, and a commitment to excellence. If you&apos;re passionate about
             making a meaningful impact and growing with a dynamic team, we invite you to explore the exciting career 
@@ -228,48 +188,48 @@ const CareerContent = () => {
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="group bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-              <div className="w-14 h-14 bg-linear-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <div className="group bg-white p-6 rounded-lg border border-gray-100 hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] transition-all duration-300">
+              <div className="w-14 h-14 bg-linear-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center mb-4 transition-transform">
                 <Sparkles className="w-7 h-7 text-white" />
               </div>
               <h4 className="text-xl font-bold text-gray-800 mb-2">Innovation</h4>
               <p className="text-gray-600">Embrace cutting-edge technology and be part of a team that&apos;s shaping the future of agriculture.</p>
             </div>
 
-            <div className="group bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-              <div className="w-14 h-14 bg-linear-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <div className="group bg-white p-6 rounded-lg border border-gray-100 hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] transition-all duration-300">
+              <div className="w-14 h-14 bg-linear-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mb-4 transition-transform">
                 <Leaf className="w-7 h-7 text-white" />
               </div>
               <h4 className="text-xl font-bold text-gray-800 mb-2">Sustainability</h4>
               <p className="text-gray-600">Contribute to sustainable practices and solutions that enhance both farming and the environment.</p>
             </div>
 
-            <div className="group bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-              <div className="w-14 h-14 bg-linear-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <div className="group bg-white p-6 rounded-lg border border-gray-100 hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] transition-all duration-300">
+              <div className="w-14 h-14 bg-linear-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center mb-4 transition-transform">
                 <TrendingUp className="w-7 h-7 text-white" />
               </div>
               <h4 className="text-xl font-bold text-gray-800 mb-2">Growth</h4>
               <p className="text-gray-600">Join a company that&apos;s growing rapidly and offers ample opportunities for professional advancement.</p>
             </div>
 
-            <div className="group bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-              <div className="w-14 h-14 bg-linear-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <div className="group bg-white p-6 rounded-lg border border-gray-100 hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] transition-all duration-300">
+              <div className="w-14 h-14 bg-linear-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mb-4 transition-transform">
                 <Users className="w-7 h-7 text-white" />
               </div>
               <h4 className="text-xl font-bold text-gray-800 mb-2">Collaboration</h4>
               <p className="text-gray-600">Work with industry experts and passionate professionals who share your enthusiasm.</p>
             </div>
 
-            <div className="group bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-              <div className="w-14 h-14 bg-linear-to-br from-red-500 to-pink-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <div className="group bg-white p-6 rounded-lg border border-gray-100 hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] transition-all duration-300">
+              <div className="w-14 h-14 bg-linear-to-br from-red-500 to-pink-500 rounded-lg flex items-center justify-center mb-4 transition-transform">
                 <Target className="w-7 h-7 text-white" />
               </div>
               <h4 className="text-xl font-bold text-gray-800 mb-2">Impact</h4>
               <p className="text-gray-600">Be a part of an organization that empowers farmers and contributes to food security.</p>
             </div>
 
-            <div className="group bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-              <div className="w-14 h-14 bg-linear-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <div className="group bg-white p-6 rounded-lg border border-gray-100 hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] transition-all duration-300">
+              <div className="w-14 h-14 bg-linear-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center mb-4 transition-transform">
                 <Award className="w-7 h-7 text-white" />
               </div>
               <h4 className="text-xl font-bold text-gray-800 mb-2">Recognition</h4>
@@ -286,7 +246,7 @@ const CareerContent = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {benefits.map((benefit, index) => (
-              <div key={index} className="text-center p-4 bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all">
+              <div key={index} className="text-center p-4 bg-white rounded-lg border border-gray-100 hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] transition-all">
                 <div className="text-green-600 mb-2 flex justify-center">{benefit.icon}</div>
                 <h4 className="font-semibold text-gray-800 text-sm">{benefit.title}</h4>
                 <p className="text-xs text-gray-500 mt-1">{benefit.description}</p>
@@ -296,11 +256,11 @@ const CareerContent = () => {
         </div>
 
         {/* Job Openings Section */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-100">
+        <div className="bg-white rounded-lg p-5 md:p-6 border border-gray-100">
           
           {/* Section Header */}
           <div className="text-center mb-10">
-            <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
+            <h3 className="font-display text-[22px] md:text-2xl font-bold text-gray-800 mb-3">
               Current <span className="text-green-600">Openings</span>
             </h3>
             <p className="text-gray-500 max-w-2xl mx-auto">
@@ -365,7 +325,7 @@ const CareerContent = () => {
           {/* Job Listings - Creative Cards */}
           <div className="space-y-4">
             {filteredJobs.map((job) => (
-              <div key={job.id} className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+              <div key={job.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] transition-all">
                 {/* Job Header - Always Visible */}
                 <div 
                   className="bg-white p-6 cursor-pointer hover:bg-gray-50 transition-colors"
@@ -454,7 +414,7 @@ const CareerContent = () => {
 
                     {/* Apply Button */}
                     <div className="mt-6 text-center">
-                      <button className="bg-linear-to-r from-green-600 to-emerald-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all hover:-translate-y-1">
+                      <button className="bg-linear-to-r from-green-600 to-emerald-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] transition-all">
                         Apply for {job.title}
                       </button>
                     </div>
@@ -477,12 +437,12 @@ const CareerContent = () => {
         {/* CTA Section */}
         <div className="text-center mt-16">
           <p className="text-gray-600 mb-4">Don&apos;t see the right fit? Send us your resume anyway</p>
-          <button className="px-8 py-4 bg-linear-to-r from-green-600 to-emerald-600 text-white rounded-full font-semibold hover:shadow-lg hover:shadow-green-200 transition-all duration-300 hover:-translate-y-1">
+          <button className="px-8 py-4 bg-linear-to-r from-green-600 to-emerald-600 text-white rounded-full font-semibold hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] hover:shadow-green-200 transition-all duration-300">
             Submit Your Resume
           </button>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

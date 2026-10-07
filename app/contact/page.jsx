@@ -3,24 +3,10 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
-import {
-  MapPin,
-  Phone,
-  Mail,
-  Building,
-  Users,
-  Clock,
-  Send,
-  ChevronRight,
-  Copy,
-  CheckCircle,
-  Globe,
-  MessageSquare,
-  Navigation,
-  Award,
-} from "lucide-react";
+import { MapPin, Phone, Mail, Building, Users, Clock, Send, ChevronRight, Copy, CheckCircle, Globe, MessageSquare, Navigation } from 'lucide-react';
 
+import PageHeader from "../components/shop/PageHeader";
+import { SITE } from "../config/site";
 const ContactContent = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -52,62 +38,38 @@ const ContactContent = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Handle form submission here
+    // No backend for this form yet: hand the message to the visitor's email
+    // app instead of pretending it was submitted.
+    const body = [
+      `Name: ${formData.name}`,
+      `Email: ${formData.email}`,
+      `Mobile: ${formData.mobile}`,
+      `Company: ${formData.company}`,
+      "",
+      formData.message,
+    ].join("\n");
+    window.location.href = `mailto:SURYA2026ENT@gmail.com?subject=${encodeURIComponent(
+      `Website enquiry from ${formData.name || "a visitor"}`
+    )}&body=${encodeURIComponent(body)}`;
     setFormStatus("success");
 
-    setTimeout(() => setFormStatus(null), 3000);
+    setTimeout(() => setFormStatus(null), 6000);
   };
 
   return (
-    <div className="bg-linear-to-b from-green-50 to-white">
-      {/* Hero Section */}
-      <div className="relative h-100 md:h-112.5 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="/assets/images/contact.jpg"
-            alt="Contact SURYAENTERPRISES"
-            fill
-            className="object-cover"
-            priority
-          />
-
-          <div className="absolute inset-0 bg-linear-to-r from-green-900/90 via-green-800/70 to-emerald-900/80"></div>
-        </div>
-
-        <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
-          <div className="text-white max-w-3xl">
-            <div className="inline-flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-white/30">
-              <MessageSquare className="w-4 h-4 mr-2 text-amber-300" />
-
-              <span className="text-sm font-medium">
-                Get in Touch
-              </span>
-            </div>
-
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              Reach Out To{" "}
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-amber-300 to-yellow-400">
-                SURYAENTERPRISES
-              </span>
-            </h1>
-
-            <div className="w-24 h-1 bg-amber-400 rounded-full mt-8"></div>
-          </div>
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-white to-transparent"></div>
-      </div>
+    <main className="pb-3">
+      <PageHeader eyebrow="Get in Touch" title="Reach Out To SURYAENTERPRISES" image="/assets/images/contact.jpg" crumbs={[{ label: "Contact" }]} />
 
       {/* Main Content */}
-      <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+      <div className="shell py-3">
 
         {/* Introduction */}
-        <div className="text-center max-w-4xl mx-auto mb-16">
+        <div className="text-center max-w-4xl mx-auto mb-6">
           <div className="inline-flex items-center justify-center p-2 bg-green-100 rounded-full mb-4">
             <Users className="w-6 h-6 text-green-700" />
           </div>
 
-          <p className="text-xl text-gray-600 leading-relaxed">
+          <p className="text-[15px] text-gray-600 leading-relaxed">
             We&apos;re here to assist you. Whether you have inquiries about
             our products, need technical support, or want to explore
             partnership opportunities, we&apos;re just a message away. Feel
@@ -116,13 +78,13 @@ const ContactContent = () => {
         </div>
 
         {/* Two Column Layout */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-12">
+        <div className="grid lg:grid-cols-2 gap-8 mb-6">
 
           {/* Left Column */}
           <div className="space-y-8">
 
             {/* Visit Our Headquarters */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            <div className="bg-white rounded-lg p-8 border border-gray-100">
               <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
                 <Building className="w-6 h-6 text-green-600 mr-2" />
                 Visit Our Offices
@@ -137,7 +99,7 @@ const ContactContent = () => {
               <div className="space-y-4">
 
                 {/* Rajasthan Office */}
-                <div className="bg-linear-to-r from-green-50 to-emerald-50 rounded-xl p-5 border border-green-100">
+                <div className="bg-linear-to-r from-green-50 to-emerald-50 rounded-lg p-5 border border-green-100">
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-green-600 flex-shrink-0 mt-1" />
 
@@ -178,7 +140,7 @@ const ContactContent = () => {
                 </div>
 
                 {/* Delhi Office */}
-                <div className="bg-linear-to-r from-green-50 to-emerald-50 rounded-xl p-5 border border-green-100">
+                <div className="bg-linear-to-r from-green-50 to-emerald-50 rounded-lg p-5 border border-green-100">
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-green-600 flex-shrink-0 mt-1" />
 
@@ -226,7 +188,7 @@ const ContactContent = () => {
             </div>
 
             {/* Contact Information */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            <div className="bg-white rounded-lg p-8 border border-gray-100">
               <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
                 <Globe className="w-6 h-6 text-green-600 mr-2" />
                 Contact Information
@@ -314,9 +276,7 @@ const ContactContent = () => {
                       Business Hours
                     </p>
 
-                    <p className="text-sm">
-                      Monday - Saturday: 9:00 AM - 6:00 PM
-                    </p>
+                    <p className="text-sm">{SITE.helpline.hours}</p>
 
                     <p className="text-sm text-gray-500">
                       Sunday: Closed
@@ -328,7 +288,7 @@ const ContactContent = () => {
           </div>
 
           {/* Right Column - Contact Form */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          <div className="bg-white rounded-lg p-8 border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center">
               <MessageSquare className="w-6 h-6 text-green-600 mr-2" />
               Let&apos;s Connect
@@ -429,7 +389,7 @@ const ContactContent = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-linear-to-r from-green-600 to-emerald-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg hover:shadow-green-200 transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2"
+                className="w-full bg-linear-to-r from-green-600 to-emerald-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] hover:shadow-green-200 transition-all duration-300 flex items-center justify-center gap-2"
               >
                 <Send className="w-5 h-5" />
 
@@ -441,8 +401,8 @@ const ContactContent = () => {
               {/* Form Status */}
               {formStatus === "success" && (
                 <div className="mt-4 p-3 bg-green-100 text-green-700 rounded-lg text-center">
-                  Thank you for reaching out! We&apos;ll get back to you
-                  soon.
+                  Your email app has opened with this message — press send
+                  to reach us, or call +91 9650300157.
                 </div>
               )}
             </form>
@@ -453,7 +413,7 @@ const ContactContent = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
 
           {/* Call Us */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 text-center hover:shadow-lg transition">
+          <div className="bg-white p-6 rounded-lg border border-gray-100 text-center hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] transition">
             <Phone className="w-8 h-8 text-green-600 mx-auto mb-3" />
 
             <h3 className="font-semibold text-gray-800">
@@ -469,7 +429,7 @@ const ContactContent = () => {
           </div>
 
           {/* Email Us */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 text-center hover:shadow-lg transition">
+          <div className="bg-white p-6 rounded-lg border border-gray-100 text-center hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] transition">
             <Mail className="w-8 h-8 text-green-600 mx-auto mb-3" />
 
             <h3 className="font-semibold text-gray-800">
@@ -485,7 +445,7 @@ const ContactContent = () => {
           </div>
 
           {/* Visit Us */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 text-center hover:shadow-lg transition">
+          <div className="bg-white p-6 rounded-lg border border-gray-100 text-center hover:shadow-[0_4px_16px_rgba(20,33,26,0.10)] transition">
             <MapPin className="w-8 h-8 text-green-600 mx-auto mb-3" />
 
             <h3 className="font-semibold text-gray-800">
@@ -499,7 +459,7 @@ const ContactContent = () => {
 
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 
