@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   Facebook, Instagram, Linkedin, Mail, MapPin, MessageCircle, Twitter, UserCheck, Youtube,
 } from "lucide-react";
+import { COMPANY_PROFILE } from "../config/company-profile";
 import { POLICY_LINKS } from "../config/policy-links";
 import { SITE, mailHref, telHref, whatsappHref } from "../config/site";
 import { CATEGORIES, COMING_SOON } from "../config/taxonomy";
@@ -28,6 +29,7 @@ const SERVICE_LINKS = [
 
 const COMPANY_LINKS = [
   { name: "About Surya Enterprises", href: "/aboutUs" },
+  { name: "Company profile (PDF)", href: COMPANY_PROFILE.pdf.href, download: true },
   { name: "Management", href: "/management" },
   { name: "Quality assurance", href: "/quality-assurance" },
   { name: "Careers", href: "/career" },

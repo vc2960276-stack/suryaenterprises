@@ -126,6 +126,13 @@ export const SITE = {
     // Example of how to add a real one once obtained:
     // { id: "cibrc", name: "CIB&RC registered", detail: "Reg. no. …", image: "/assets/images/cibrc.png", href: "/quality-assurance", enabled: false },
   ],
+  // Agro-input sales licences held by the business (state pesticide / seed /
+  // fertiliser sale licences). Rendered on the About page and in the company
+  // profile PDF ONLY when filled — leave empty until the owner supplies the
+  // real numbers. Shape:
+  //   { authority: "Directorate of Agriculture, Rajasthan", number: "…", scope: "Insecticides (retail)", validTill: "YYYY-MM-DD" }
+  licences: [],
+
   // Factual chips next to the certifications. `icon` keys: factory, upi, receipt, shield, phone.
   trustChips: [
     { icon: "factory", text: "Manufacturer direct" },

@@ -63,6 +63,141 @@ const GLYPHS = {
       <path d="M9 11h.01M12 11h.01M15 11h.01" />
     </>
   ),
+
+  // ---- About page: the problem we saw ----
+  // stacked layers (margins added at every hand-off)
+  layers: (
+    <>
+      <path d="M12 4l8 4-8 4-8-4z" fill="#0F7A3D" fillOpacity="0.18" />
+      <path d="M4 12l8 4 8-4" />
+      <path d="M4 16l8 4 8-4" />
+    </>
+  ),
+  // calendar with a cross (stock-outs in the sowing / spraying window)
+  calendar: (
+    <>
+      <rect x="4" y="5" width="16" height="15" rx="2" />
+      <path d="M4 10h16M8 3v4M16 3v4" />
+      <path d="M10 13.5l4 4M14 13.5l-4 4" />
+    </>
+  ),
+  // warning triangle (counterfeit / adulterated inputs)
+  alert: (
+    <>
+      <path d="M12 4.5l8.5 14.5h-17z" fill="#FFC72C" fillOpacity="0.35" />
+      <path d="M12 10v4M12 16.5h.01" />
+    </>
+  ),
+  // crossed-out eye (no guidance, no price transparency)
+  eyeoff: (
+    <>
+      <path d="M3 3l18 18" />
+      <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+      <path d="M9.9 5.3A9.6 9.6 0 0 1 12 5c5 0 8.6 4 9.5 7-.4 1.2-1.2 2.5-2.3 3.6" />
+      <path d="M6.6 6.6C4.6 8 3.2 10 2.5 12c1 3 4.5 7 9.5 7 1.7 0 3.2-.4 4.5-1.1" />
+    </>
+  ),
+
+  // ---- About page: how we sell ----
+  // globe (website)
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18" />
+      <path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+    </>
+  ),
+  // shop front with awning (offline store)
+  store: (
+    <>
+      <path d="M4 10l1.5-5h13L20 10" fill="#FFC72C" fillOpacity="0.4" />
+      <path d="M4 10a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0" />
+      <path d="M5 12.5V20h14v-7.5" />
+      <path d="M10 20v-5h4v5" />
+    </>
+  ),
+  // seedling (farmers / what changes for a farmer)
+  sprout: (
+    <>
+      <path d="M12 21v-8" />
+      <path d="M12 13c0-4 3-6.5 7-6.5 0 4-3 6.5-7 6.5z" fill="#0F7A3D" fillOpacity="0.18" />
+      <path d="M12 13c0-3-2.5-5-6-5 0 3 2.5 5 6 5z" />
+      <path d="M5 21h14" />
+    </>
+  ),
+
+  // ---- About page: what we sell ----
+  // insect (insecticides)
+  bug: (
+    <>
+      <ellipse cx="12" cy="14" rx="5" ry="6" />
+      <path d="M12 8v12M7 14H4M20 14h-3M8 10.5l-3-2M16 10.5l3-2M8 17.5l-3 2M16 17.5l3 2" />
+      <path d="M9 8a3 3 0 0 1 6 0" />
+    </>
+  ),
+  // grass blades (herbicides)
+  weed: (
+    <>
+      <path d="M12 21c0-6-3-10-7-12 2 5 3 8 7 12z" fill="#0F7A3D" fillOpacity="0.18" />
+      <path d="M12 21c0-6 3-10 7-12-2 5-3 8-7 12z" />
+      <path d="M12 21V7" />
+      <path d="M5 21h14" />
+    </>
+  ),
+  // leaf with a disease spot (fungicides)
+  leaf: (
+    <>
+      <path d="M5 19c0-8 5-13 14-13 0 9-5 14-13 14" />
+      <path d="M5 19c3-5 6-8 10-10" />
+      <circle cx="14.5" cy="9.5" r="1.3" fill="#0F7A3D" />
+    </>
+  ),
+  // rising line (plant growth regulators)
+  growth: (
+    <>
+      <path d="M4 20V6M4 20h16" />
+      <path d="M7 16l4-5 3 3 5-7" />
+      <path d="M16 7h3v3" />
+    </>
+  ),
+  // wheat ear (seeds)
+  wheat: (
+    <>
+      <path d="M12 21V9" />
+      <path d="M12 9c-3 0-5-2-5-5 3 0 5 2 5 5z" fill="#FFC72C" fillOpacity="0.45" />
+      <path d="M12 9c3 0 5-2 5-5-3 0-5 2-5 5z" />
+      <path d="M12 14c-3 0-5-2-5-5 3 0 5 2 5 5z" />
+      <path d="M12 14c3 0 5-2 5-5-3 0-5 2-5 5z" />
+    </>
+  ),
+  // hand tool (agro equipment)
+  tools: (
+    <>
+      <path d="M3 21l9-9" />
+      <path d="M12 12l-2-2 4-4 4 4-4 4z" fill="#0F7A3D" fillOpacity="0.18" />
+      <path d="M16 8l3-3M19 5l1 1" />
+    </>
+  ),
+  // folded sheet with eyelets (tarpaulins)
+  tarp: (
+    <>
+      <path d="M3 7l4-3h14l-4 3z" fill="#0F7A3D" fillOpacity="0.18" />
+      <path d="M3 7v12h14V7" />
+      <path d="M17 19l4-3V4" />
+      <circle cx="6.5" cy="10.5" r="0.9" fill="#0F7A3D" />
+      <circle cx="13.5" cy="10.5" r="0.9" fill="#0F7A3D" />
+      <circle cx="6.5" cy="15.5" r="0.9" fill="#0F7A3D" />
+      <circle cx="13.5" cy="15.5" r="0.9" fill="#0F7A3D" />
+    </>
+  ),
+  // tied sack (crop nutrients / inputs)
+  sack: (
+    <>
+      <path d="M9 4h6l1 3H8z" fill="#FFC72C" fillOpacity="0.45" />
+      <path d="M8 7c-3 3-4 6-4 9a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4c0-3-1-6-4-9" />
+      <path d="M10 14h4" />
+    </>
+  ),
 };
 
 export function Medallion({ icon }) {

@@ -3,11 +3,13 @@ import {
   Building2, ChevronRight, FileText, Headset, LayoutGrid, ShoppingBag,
 } from "lucide-react";
 import PageHeader from "../components/shop/PageHeader";
+import { COMPANY_PROFILE } from "../config/company-profile";
 import { POLICY_LINKS } from "../config/policy-links";
 import { SITE } from "../config/site";
 import { CATEGORIES, COMING_SOON } from "../config/taxonomy";
 
-type SitemapLink = { name: string; href: string; desc?: string; soon?: boolean };
+// `download` links point at a static file (plain anchor), not a route.
+type SitemapLink = { name: string; href: string; desc?: string; soon?: boolean; download?: boolean };
 type SitemapGroup = { id: string; title: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; links: SitemapLink[] };
 
 const groups: SitemapGroup[] = [
@@ -57,7 +59,13 @@ const groups: SitemapGroup[] = [
     title: "Company",
     icon: Building2,
     links: [
-      { name: "About Surya Enterprises", href: "/aboutUs", desc: "Who we are and what we make" },
+      { name: "About Surya Enterprises", href: "/aboutUs", desc: "Where we started, the problem we saw, what and how we sell" },
+      {
+        name: "Company profile (PDF)",
+        href: COMPANY_PROFILE.pdf.href,
+        desc: `${COMPANY_PROFILE.pdf.format}, ${COMPANY_PROFILE.pdf.pages} pages — for investors and partners`,
+        download: true,
+      },
       { name: "Management", href: "/management", desc: "Leadership team" },
       { name: "Quality assurance", href: "/quality-assurance", desc: "Manufacturing process, ISO and ZED certification" },
       { name: "Careers", href: "/career", desc: "Open positions across India" },
@@ -101,6 +109,14 @@ export default function SitemapPage() {
                           {l.name} <span className="ml-1 rounded-full border border-line px-1.5 py-px text-[9px] font-bold uppercase tracking-wider">Soon</span>
                         </span>
                       </span>
+                    ) : l.download ? (
+                      <a href={l.href} download className="group flex items-center justify-between gap-3 py-2 text-[13px]">
+                        <span className="min-w-0">
+                          <span className="block font-semibold text-ink group-hover:text-brand">{l.name}</span>
+                          {l.desc && <span className="block truncate text-xs text-ink-2">{l.desc}</span>}
+                        </span>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-ink-3 transition-transform group-hover:translate-x-0.5 group-hover:text-brand" strokeWidth={1.75} />
+                      </a>
                     ) : (
                       <Link href={l.href} className="group flex items-center justify-between gap-3 py-2 text-[13px]">
                         <span className="min-w-0">
