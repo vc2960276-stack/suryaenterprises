@@ -4,6 +4,7 @@ import Footer from "./components/footer";
 import MobileBottomNav from "./components/shop/MobileBottomNav";
 import OffersMarquee from "./components/shop/OffersMarquee";
 import Toaster from "./components/shop/Toast";
+import StoreChrome from "./components/shop/StoreChrome";
 import { SITE } from "./config/site";
 import "./globals.css";
 
@@ -33,13 +34,13 @@ export default function RootLayout({ children }) {
         >
           Skip to content
         </a>
-        <Navbar />
-        {SITE.offersSiteWide && <OffersMarquee />}
-        <div id="main" className="min-h-[60vh]">
+        <StoreChrome
+          header={<><Navbar />{SITE.offersSiteWide && <OffersMarquee />}</>}
+          footer={<Footer />}
+          mobileNavigation={<MobileBottomNav />}
+        >
           {children}
-        </div>
-        <Footer />
-        <MobileBottomNav />
+        </StoreChrome>
         <Toaster />
       </body>
     </html>

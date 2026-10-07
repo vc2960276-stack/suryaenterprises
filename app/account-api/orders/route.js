@@ -5,7 +5,7 @@ import { handler, ok } from "../../lib-account/session";
 export const dynamic = "force-dynamic";
 
 // GET /account-api/orders — read-only list of the signed-in customer's
-// orders from the existing Order collection (Order.js is frozen; it has no
+// orders from the existing Order collection (it has no
 // customerId). Orders are matched on the email captured at checkout. Phone
 // numbers are deliberately NOT used for matching: they are unverified at
 // sign-up, so a shared or mistyped number would expose someone else's orders.

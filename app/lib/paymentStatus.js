@@ -16,6 +16,7 @@ export function verifiedPaymentUpdate(order, provider) {
   if (paymentStatus === "paid" && (!paymentId || paymentId === "Not Found")) return null;
   return {
     paymentStatus,
+    ...(paymentStatus === "paid" && order.paymentStatus !== "paid" ? { paidAt: new Date() } : {}),
     ...(paymentId && paymentId !== "Not Found" ? { payuPaymentId: paymentId } : {}),
     ...(details.bank_ref_num || details.bank_ref_no ? { payuBankRefNum: String(details.bank_ref_num || details.bank_ref_no) } : {}),
     payuResponse: provider,

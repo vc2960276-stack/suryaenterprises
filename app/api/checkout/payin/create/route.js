@@ -13,6 +13,9 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
+    if (!Array.isArray(body?.items) || body.items.length === 0) {
+      return NextResponse.json({ status: "error", error: "Refresh checkout and select products before paying." }, { status: 400 });
+    }
     const internalRequest = new Request(request.url, {
       method: "POST",
       headers: {

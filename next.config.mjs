@@ -12,6 +12,12 @@ const nextConfig = {
     return [{
       source: "/assets/catalog/:path*",
       headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+    }, {
+      source: "/admin/:path*",
+      headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }, { key: "X-Frame-Options", value: "DENY" }, { key: "Referrer-Policy", value: "same-origin" }],
+    }, {
+      source: "/admin-api/:path*",
+      headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0" }, { key: "X-Frame-Options", value: "DENY" }],
     }];
   },
   async rewrites() {

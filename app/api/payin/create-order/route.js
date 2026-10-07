@@ -4,6 +4,8 @@ import { connectDB } from "../../../lib/mongodb";
 import Order from "../../../models/Order";
 import { createPayUIntent } from "../../../lib/payu";
 import { enqueuePaymentRecovery } from "../../../lib/paymentRecoveryQueue";
+import { prepareStorefrontPurchase } from "../../../lib/checkoutOrder.mjs";
+import catalog from "../../../products/data/products.json";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +17,7 @@ function getBearerToken(request) {
 }
 
 function makeOrderId() {
-  return `SE${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`;
+  return `SE${Date.now()}${crypto.randomBytes(4).toString("hex")}`;
 }
 
 export async function POST(request) {
@@ -79,6 +81,12 @@ export async function POST(request) {
         },
         { status: 400 }
       );
+    }
+
+    let purchase = null;
+    if (body.items !== undefined) {
+      try { purchase = prepareStorefrontPurchase(body, catalog); }
+      catch (error) { return NextResponse.json({ status: "error", error: error.message }, { status: 400 }); }
     }
 
     // ---------------------------------
@@ -148,7 +156,10 @@ export async function POST(request) {
         lastName,
         email: customerEmail,
         phone: customerMobile,
+        ...(purchase?.customer || {}),
       },
+
+      ...(purchase ? { items: purchase.items, orderSource: "storefront" } : { orderSource: "gateway" }),
 
       subtotal: Number(numericAmount.toFixed(2)),
 

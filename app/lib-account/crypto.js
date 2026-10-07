@@ -53,15 +53,5 @@ export function verifyJwt(token, secret) {
   }
 }
 
-// --- input normalisation shared by the account routes -----------------------
-export const normaliseEmail = (v) => String(v ?? "").trim().toLowerCase();
-
-// Indian mobile: keep the last 10 digits (drops +91 / 0 prefixes).
-export function normalisePhone(v) {
-  const digits = String(v ?? "").replace(/\D/g, "");
-  return digits.length >= 10 ? digits.slice(-10) : digits;
-}
-
-export const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
-export const isValidPhone = (v) => /^[6-9]\d{9}$/.test(v);
-export const isValidPin = (v) => /^[1-9]\d{5}$/.test(v);
+// Preserve server imports while clients use the browser-safe module directly.
+export { normaliseEmail, normalisePhone, isValidEmail, isValidPhone, isValidPin } from "./validation.js";

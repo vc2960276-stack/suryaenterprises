@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
 import AuthCard, { Field, FormError } from "../components/shop/AuthCard";
-import { isValidEmail, isValidPhone, normalisePhone } from "../lib-account/crypto";
+import { isValidEmail, isValidPhone, normalisePhone } from "../lib-account/validation";
 import { register, useSession } from "../lib-account/session-client";
 
 const safeNext = (v) => (v && v.startsWith("/") && !v.startsWith("//") ? v : "/account");

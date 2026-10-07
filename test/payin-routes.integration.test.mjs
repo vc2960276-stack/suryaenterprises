@@ -13,6 +13,8 @@ test("Surya routes create and verify real isolated orders, validate callbacks an
     PAYIN_BACKEND_WEBHOOK_URL: "https://gateway.example/api/webhooks/payu/payment" });
   const payu = await import("../app/lib/payu.js");
   const payment = await import("../app/lib/paymentStatus.js");
+  const { prepareStorefrontPurchase } = await import("../app/lib/checkoutOrder.mjs");
+  const catalog = JSON.parse(await readFile(new URL("../app/products/data/products.json", import.meta.url), "utf8"));
   const { default: Order } = await import("../app/models/Order.js");
   const originalFetch = global.fetch;
   const dbName = `surya_payin_e2e_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
@@ -21,10 +23,10 @@ test("Surya routes create and verify real isolated orders, validate callbacks an
   // Execute the production handlers with their import dependencies injected.
   // No route logic or financial query is replaced; MongoDB and PayU SDK run normally.
   globalThis.__suryaPayinFixture = { crypto, NextResponse, connectDB: async () => mongoose.connection, Order,
-    enqueuePaymentRecovery: async () => false, ...payu, ...payment };
+    enqueuePaymentRecovery: async () => false, prepareStorefrontPurchase, catalog, ...payu, ...payment };
   const load = async path => {
     const source = (await readFile(new URL(path, import.meta.url), "utf8")).replace(/^import .*;\r?$/gm, "");
-    return import(`data:text/javascript;base64,${Buffer.from(`const { crypto, NextResponse, connectDB, Order, createPayUIntent, verifyPayUPayment, verifyPayUCallbackHash, refreshOrderPayment, verifiedPaymentUpdate, enqueuePaymentRecovery } = globalThis.__suryaPayinFixture;\n${source}`).toString("base64")}`);
+    return import(`data:text/javascript;base64,${Buffer.from(`const { crypto, NextResponse, connectDB, Order, createPayUIntent, verifyPayUPayment, verifyPayUCallbackHash, refreshOrderPayment, verifiedPaymentUpdate, enqueuePaymentRecovery, prepareStorefrontPurchase, catalog } = globalThis.__suryaPayinFixture;\n${source}`).toString("base64")}`);
   };
   const create = await load("../app/api/payin/create-order/route.js");
   const check = await load("../app/api/payin/check-status/route.js");
@@ -95,6 +97,19 @@ test("Surya routes create and verify real isolated orders, validate callbacks an
       providerStatus = 200;
       actual.status = "failed";
       assert.equal((await call(check, { order_id: order.orderId })).body.data.payment_status, "failed");
+    });
+    await t.test("storefront purchase persists server prices and address, rejects spoofed totals before PayU", async () => {
+      const product = catalog.find(p => Number.isFinite(p.price) && p.price > 0 && p.stock >= 1);
+      const body = { amount: product.price, name: "Fixture Buyer", email: "buyer@example.invalid", mobile: "9999999999",
+        items: [{ sku: product.sku, quantity: 1, price: 0.01 }], shipping: { address: "Synthetic street", city: "Delhi", state: "Delhi", pinCode: "110001" } };
+      const before = truth.size;
+      assert.equal((await call(create, { ...body, amount: 0.01 })).status, 400);
+      assert.equal(truth.size, before);
+      const result = await call(create, body);
+      assert.equal(result.status, 200);
+      const saved = await Order.findOne({ orderId: result.body.data.order_id });
+      assert.equal(saved.items[0].sku, product.sku); assert.equal(saved.items[0].price, product.price);
+      assert.equal(saved.customer.address, "Synthetic street"); assert.equal(saved.orderSource, "storefront");
     });
     await t.test("late success recovers failure, uses authoritative UTR and retries a dropped backend relay", async () => {
       const actual = truth.get(order.transactionId);

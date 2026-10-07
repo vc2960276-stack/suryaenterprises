@@ -1,5 +1,5 @@
 // Address validation shared by the addresses routes and checkout save.
-import { isValidPhone, isValidPin, normalisePhone } from "./crypto";
+import { isValidPhone, isValidPin, normalisePhone } from "./validation";
 
 const clean = (v, max) => String(v ?? "").trim().slice(0, max);
 

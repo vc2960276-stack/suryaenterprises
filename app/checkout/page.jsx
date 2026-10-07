@@ -87,11 +87,6 @@ export default function CheckoutPage() {
     setPaymentMessage("");
 
     try {
-      // Generate unique Surya order ID
-      const orderId = `SE${Date.now()}${Math.floor(
-        1000 + Math.random() * 9000
-      )}`;
-
       const customerName =
         `${details.firstName} ${details.lastName}`.trim();
 
@@ -105,9 +100,10 @@ export default function CheckoutPage() {
           },
 
           body: JSON.stringify({
-            order_id: orderId,
-
             amount: Number(subtotal),
+
+            items: cartItems.map(item => ({ sku: item.product.sku, quantity: item.quantity })),
+            shipping: { address: details.address, apartment: details.apartment, city: details.city, state: details.state, pinCode: details.pinCode, notes: details.notes },
 
             name: customerName,
 

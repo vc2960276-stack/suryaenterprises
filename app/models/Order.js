@@ -10,6 +10,8 @@ const OrderSchema = new mongoose.Schema(
     },
     items: [{ sku: String, name: String, quantity: Number, price: Number }],
     subtotal: Number,
+    orderSource: { type: String, enum: ["storefront", "gateway"] },
+    paidAt: Date,
     paymentStatus: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
     paymentMethod: { type: String, default: "payu_dynamic_qr" },
     provider: { type: String, default: "payu" },
