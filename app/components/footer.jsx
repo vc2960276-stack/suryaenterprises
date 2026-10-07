@@ -29,7 +29,7 @@ const SERVICE_LINKS = [
 
 const COMPANY_LINKS = [
   { name: "About Surya Enterprises", href: "/aboutUs" },
-  { name: "Company profile (PDF)", href: COMPANY_PROFILE.pdf.href, download: true },
+  { name: COMPANY_PROFILE.pdf.linkLabel, href: COMPANY_PROFILE.pdf.href, download: true },
   { name: "Management", href: "/management" },
   { name: "Quality assurance", href: "/quality-assurance" },
   { name: "Careers", href: "/career" },

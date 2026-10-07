@@ -230,7 +230,7 @@ export default function AboutPage() {
             <SectionTitle
               id="sell-heading"
               eyebrow="What we sell"
-              title="Crop protection online today; seeds, equipment and nutrients through the store"
+              title="Crop protection and nutrients online today; seeds, equipment and inputs through the store"
             />
             <dl className="grid shrink-0 grid-cols-3 divide-x divide-line rounded-lg border border-line bg-canvas">
               {[
@@ -268,7 +268,7 @@ export default function AboutPage() {
                 <div className="flex items-center gap-3 md:flex-col md:items-end md:gap-1.5">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-tint px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-brand">
                     <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden="true" />
-                    {P.availability.online}
+                    {P.availability.online.badge}
                   </span>
                   <Link href={`/c/${line.categorySlug}`} className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand hover:underline">
                     Shop {lineLabel(line.name)}
@@ -295,7 +295,7 @@ export default function AboutPage() {
               ))}
             </ul>
             <p className="mt-3 text-[12.5px] text-ink-2">
-              {P.availability.offlineNote}{" "}
+              {P.availability.offline.note}{" "}
               <Link href="/products/institutional" className="font-semibold text-brand hover:underline">
                 Ask the institutional desk
               </Link>{" "}
@@ -403,10 +403,10 @@ export default function AboutPage() {
                 className="inline-flex h-12 items-center gap-2.5 rounded-full bg-ink px-6 text-[14px] font-semibold text-white shadow-[0_6px_18px_rgba(20,33,26,0.22)] transition hover:bg-black hover:shadow-[0_8px_24px_rgba(20,33,26,0.3)] active:translate-y-px"
               >
                 <Download className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                Download company profile (PDF)
+                {P.pdf.buttonLabel}
               </a>
               <p className="mt-1.5 text-xs text-ink-3 md:text-right">
-                {P.pdf.format} · {P.pdf.pages} pages · for investors and partners
+                {P.pdf.format} · {P.pdf.pages} pages · {P.pdf.caption}
               </p>
             </div>
           </div>

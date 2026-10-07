@@ -61,9 +61,9 @@ const groups: SitemapGroup[] = [
     links: [
       { name: "About Surya Enterprises", href: "/aboutUs", desc: "Where we started, the problem we saw, what and how we sell" },
       {
-        name: "Company profile (PDF)",
+        name: COMPANY_PROFILE.pdf.linkLabel,
         href: COMPANY_PROFILE.pdf.href,
-        desc: `${COMPANY_PROFILE.pdf.format}, ${COMPANY_PROFILE.pdf.pages} pages — for investors and partners`,
+        desc: `${COMPANY_PROFILE.pdf.format}, ${COMPANY_PROFILE.pdf.pages} pages — ${COMPANY_PROFILE.pdf.caption}`,
         download: true,
       },
       { name: "Management", href: "/management", desc: "Leadership team" },

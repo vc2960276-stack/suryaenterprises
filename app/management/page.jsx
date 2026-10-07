@@ -23,7 +23,7 @@ const ManagementContent = () => {
             </span>
           </h2>
           <p className="text-[15px] text-gray-600 leading-relaxed">
-            At SURYAENTERPRISES, our success is a collective effort led by a dedicated and experienced management team. 
+            At SURYA ENTERPRISES, our success is a collective effort led by a dedicated and experienced management team. 
             Meet the individuals who drive our company&apos;s vision, innovation, and commitment to agricultural excellence.
           </p>
         </div>
@@ -43,9 +43,9 @@ const ManagementContent = () => {
                 <div className="space-y-4 text-gray-600 leading-relaxed">
                   <p>Dear Friends and Partners,</p>
                   <p>
-                    I am delighted to welcome you to the digital home of SURYAENTERPRISES Greens Ltd., where we cultivate 
+                    I am delighted to welcome you to the digital home of SURYA ENTERPRISES, where we cultivate 
                     progress, nurture innovation, and empower a greener tomorrow. For over 12 years formerly known as 
-                    &apos;Solar Crop Science&apos;, SURYAENTERPRISES has stood as a beacon of agricultural excellence. Our journey,
+                    &apos;Solar Crop Science&apos;, SURYA ENTERPRISES has stood as a beacon of agricultural excellence. Our journey,
                     rooted in dedication and driven by science, has led us to develop AgroChemical solutions that not 
                     only transform crops but also shape the landscape of modern farming.
                   </p>
@@ -53,10 +53,10 @@ const ManagementContent = () => {
                     I invite you to explore our website and discover a world of possibilities. From our meticulously 
                     crafted products to insightful agricultural resources, our platform is designed to be your companion 
                     in growth. Whether you&apos;re an experienced farmer, a novice cultivator, or an industry partner,
-                    SURYAENTERPRISES is here to support you at every step.
+                    SURYA ENTERPRISES is here to support you at every step.
                   </p>
                   <p>
-                    Thank you for being part of the SURYAENTERPRISES family. Together, let&apos;s continue to cultivate excellence
+                    Thank you for being part of the SURYA ENTERPRISES family. Together, let&apos;s continue to cultivate excellence
                     and sow the seeds of prosperity.
                   </p>
                 </div>
@@ -155,7 +155,7 @@ const ManagementContent = () => {
             <HeartHandshake className="w-16 h-16 mx-auto mb-6 text-amber-300" />
             <h3 className="font-display text-[22px] md:text-2xl font-bold mb-4">Join Our Journey</h3>
             <p className="text-[15px] text-white/90 leading-relaxed">
-              The leadership team at SURYAENTERPRISES  Limited is united by a shared vision of agricultural progress 
+              The leadership team at SURYA ENTERPRISES is united by a shared vision of agricultural progress 
               and sustainable growth. Together, we work tirelessly to bring innovative solutions to farmers, empower 
               communities, and shape the future of farming.
             </p>

@@ -17,7 +17,7 @@ const HELPLINE = { display: "+91 9650300157", tel: "+919650300157", hours: HELPL
 
 export const SITE = {
   name: "Surya Enterprises",
-  legalName: "SURYAENTERPRISES Limited",
+  legalName: "SURYA ENTERPRISES",
   shortLabel: "Agri Marketplace",
   tagline: "India's biggest agriculture marketplace",
   // One-line mission shown in the footer brand block.

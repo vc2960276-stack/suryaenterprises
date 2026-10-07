@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------
-// Surya Enterprises — company profile content.
+// Surya Enterprises — company / business profile content.
 //
 // ONE source for everything the About page (app/aboutUs/page.jsx) and the
-// downloadable company profile PDF (scripts/build-company-profile.mjs) say
+// downloadable Business Profile PDF (scripts/build-company-profile.mjs) say
 // about the business. Edit here and both update on the next build.
 //
 // Facts only. Figures the business has not supplied (revenue, farmer counts,
@@ -15,30 +15,36 @@
 import { SITE } from "./site.js";
 
 const FOUNDED = 2023;
+const fmt = (n) => n.toLocaleString("en-IN");
 
 export const COMPANY_PROFILE = {
   founded: FOUNDED,
-  // Date the figures below were supplied by the owner (shown as "Figures as of …").
-  figuresAsOf: "2026-10-07",
 
   name: "Surya Enterprises",
+  tradeName: "Surya Enterprises",
   displayName: "SURYA ENTERPRISES",
   legalName: SITE.legalName,
   tagline: "India's agriculture marketplace",
   positioning: "India's agriculture marketplace, built from inside the supply chain.",
   website: { display: "www.suryaenter.in", url: "https://www.suryaenter.in" },
 
+  // One-line nature of business (identity block of the PDF).
+  natureOfBusiness:
+    "Licensed agro-inputs marketplace; manufacturer and direct seller of crop-protection products",
+
   // The generated PDF (public/downloads). `pages` is asserted by the build script.
   pdf: {
     href: "/downloads/surya-enterprises-company-profile.pdf",
-    title: "Company Profile",
-    pages: 5,
+    title: "Business Profile",
+    subtitle: "Nature of business declaration",
+    pages: 3,
     format: "A4",
+    caption: "nature of business, products, channels, customers",
+    linkLabel: "Business profile (PDF)",
+    buttonLabel: "Download business profile (PDF)",
   },
-  confidentiality: "Confidential — for investor and partner reference",
-  disclaimerTemplate: "Figures as of {date}; this profile is informational and not an offer of securities.",
 
-  // Cover fact chips (PDF) and hero chips (About page).
+  // Hero chips on the About page.
   coverChips: [`Founded ${FOUNDED}`, "Licensed agro-inputs marketplace", "ISO & ZED certified"],
 
   // Online catalogue facts as supplied. The build script compares these with
@@ -48,7 +54,7 @@ export const COMPANY_PROFILE = {
     activeIngredients: 651,
     priceMin: 100,
     priceMax: 10000,
-    onlineCategories: ["insecticides", "herbicides", "fungicides", "PGR & others"],
+    onlineCategories: ["insecticides", "herbicides", "fungicides", "PGR & crop nutrients"],
   },
 
   // Share of sales by customer type (percent).
@@ -58,6 +64,19 @@ export const COMPANY_PROFILE = {
   // business supplies audited numbers and extend the page/PDF to render them.
   revenue: null,
   farmersServed: null,
+
+  // ---- PDF section 1: nature of business ------------------------------------
+  nature: {
+    paragraph:
+      `${SITE.legalName}, trading as Surya Enterprises, is a licensed agro-inputs marketplace based at Rajdhani Krishi Mandi, Jaipur, with a corporate office in New Delhi. It manufactures and supplies crop-protection products (insecticides, herbicides, fungicides and plant growth regulators) and sells them directly to farmers and institutional buyers — through its website, its Jaipur store and an institutional desk — with no distributors or commission agents in between. Founded in ${FOUNDED} as a backend support channel for the agri-inputs supply chain, the company was incorporated to build the Surya Marketplace.`,
+    bullets: [
+      "Manufacturer-direct: products are manufactured and supplied by Surya Enterprises (ISO and ZED certified).",
+      "Sells directly to farmers (B2C, 70% of sales) and to universities and institutes, bulk enterprises, dealers and co-operatives (B2B, 30%).",
+      // {priceRange} is filled by the build script with ₹ (brand fonts embedded) or "INR".
+      `Online catalogue of ${fmt(10472)} SKUs across 651 active ingredients, priced {priceRange} per pack.`,
+      "Seeds, agro equipment, tarpaulins (tirpal) and crop-production inputs are sold in-store and by quotation.",
+    ],
+  },
 
   // ---- About page: "Where we started" ------------------------------------
   origin: {
@@ -139,31 +158,6 @@ export const COMPANY_PROFILE = {
     ],
   },
 
-  // ---- PDF page 2: business overview + model --------------------------------
-  overviewBullets: [
-    "Licensed agro-inputs marketplace selling directly to farmers and institutions across India through the website, a store in Jaipur and an institutional desk.",
-    "Manufacturer-direct: products are manufactured and supplied by Surya Enterprises; ISO certified and ZED (Zero Defect Zero Effect) certified.",
-    "Online catalogue of 10,472 SKUs across insecticides, herbicides, fungicides and PGR & others, covering 651 active ingredients.",
-    "Pack prices from INR 100 to INR 10,000; every listing shows the active ingredient, formulation and pack size.",
-    "Seeds, agro equipment, tarpaulins (tirpal) and crop nutrients supplied through the store and institutional desk; coming online in phases.",
-    `Founded ${FOUNDED} as a backend support channel for the agri-inputs supply chain; incorporated as SURYA ENTERPRISES and launched the Surya Marketplace.`,
-    "GST-registered in Rajasthan (registered office, Jaipur) and Delhi (corporate office).",
-  ],
-  businessModel: [
-    {
-      title: "Manufacturer-direct supply",
-      text: "Surya Enterprises manufactures and supplies the products it sells. No distributor, wholesaler or commission layer sits between the company and the buyer.",
-    },
-    {
-      title: "D2C — farmers (70% of sales)",
-      text: "Website orders paid by UPI and dispatched to serviceable PIN codes across India, plus in-person sales at the Jaipur store.",
-    },
-    {
-      title: "B2B — institutions (30% of sales)",
-      text: "Quotation-based supply to agricultural universities and institutes, bulk enterprises, dealers and co-operatives through the institutional desk.",
-    },
-  ],
-
   // ---- Product portfolio ------------------------------------------------------
   // `online: true` lines are live on the website (categorySlug → /c/<slug>).
   // Example product names are verified against products.json by the build script.
@@ -190,8 +184,8 @@ export const COMPANY_PROFILE = {
       examples: ["Mancozeb 75% WP", "Azoxystrobin 23% SC", "Tebuconazole 25.9% EC", "Carbendazim 50% WP"],
     },
     {
-      name: "PGR & others",
-      detail: "Plant growth regulators and bio-stimulants",
+      name: "PGR & crop nutrients",
+      detail: "Plant growth regulators, bio-stimulants and nutrients",
       icon: "growth",
       online: true,
       categorySlug: "pgr-and-others",
@@ -200,15 +194,19 @@ export const COMPANY_PROFILE = {
     { name: "Seeds", icon: "wheat", online: false, examples: [] },
     { name: "Agro equipment", icon: "tools", online: false, examples: [] },
     { name: "Tarpaulins (tirpal)", icon: "tarp", online: false, examples: [] },
-    { name: "Crop nutrients & crop-production inputs", icon: "sack", online: false, examples: [] },
+    { name: "Crop-production inputs", icon: "sack", online: false, examples: [] },
   ],
   availability: {
-    online: "Online now",
-    offline: "Store & institutional desk",
-    offlineNote: "Available through our store and institutional desk; coming online in phases.",
+    online: { badge: "Online now", channels: "Website + store" },
+    offline: {
+      badge: "Store & institutional desk",
+      channels: "Store & institutional desk",
+      note: "Available through our store and institutional desk; coming online in phases.",
+    },
   },
 
   // ---- Sales channels -----------------------------------------------------------
+  // `how` / `payment` feed the PDF channel table; the rest feeds the About cards.
   channels: [
     {
       key: "website",
@@ -216,16 +214,19 @@ export const COMPANY_PROFILE = {
       title: "Website",
       detail: "www.suryaenter.in",
       text: "Browse by category, active ingredient and pack size. Pay by UPI via PayU; dispatch to serviceable PIN codes across India.",
+      how: "Online orders at www.suryaenter.in (browse by category, active ingredient and pack size); dispatched to serviceable PIN codes across India.",
+      payment: SITE.payments.join(", "),
       href: "/products",
       cta: "Shop online",
     },
     {
       key: "store",
       icon: "store",
-      title: "Offline store",
+      title: "In-store",
       detail: "Rajdhani Krishi Mandi, Jaipur",
-      // Full address comes from SITE.offices[0] (registered office).
       text: "Buy in person at our registered office in Jaipur's agricultural mandi.",
+      how: `Walk-in purchases at the registered office: ${SITE.offices[0].address} (${SITE.helpline.hours}).`,
+      payment: "At the store counter",
       href: "/contact",
       cta: "Contact & directions",
     },
@@ -235,6 +236,8 @@ export const COMPANY_PROFILE = {
       title: "Institutional desk",
       detail: "Quotations · GST invoice",
       text: "Bulk supply and technical grades with listed purity for universities, institutes, bulk enterprises, dealers and co-operatives.",
+      how: `Quotations by phone (${SITE.helpline.display}) or email (${SITE.email}); GST invoice issued for every supply.`,
+      payment: `Bank transfer / UPI. ${SITE.policies.bulk.creditTerms}`,
       href: "/products/institutional",
       cta: "Request a quotation",
     },
@@ -247,7 +250,7 @@ export const COMPANY_PROFILE = {
       share: 70,
       label: "B2C",
       title: "Farmers",
-      text: "Farmers buying for their own fields — on the website or at the store.",
+      text: "Farmers buying for their own fields, per pack — on the website or in-store.",
       who: ["Small and marginal farmers", "Individual growers"],
     },
     {
@@ -255,7 +258,7 @@ export const COMPANY_PROFILE = {
       share: 30,
       label: "B2B",
       title: "Institutions & bulk buyers",
-      text: "Served through the institutional desk with quotations and GST invoices.",
+      text: "Buying by quotation through the institutional desk, with GST invoices.",
       who: ["Agricultural universities and institutes", "Bulk enterprises", "Dealers and co-operatives"],
     },
   ],
@@ -263,35 +266,35 @@ export const COMPANY_PROFILE = {
   paymentPartners: ["PayU", "Razorpay"],
   // Agro-input sales licences — rendered only when SITE.licences is filled.
   licences: SITE.licences ?? [],
+  licencesFallback: "Licence details available on request.",
+
+  // ---- PDF section 6: declaration ---------------------------------------------------
+  declaration: {
+    statement: "We confirm that the information above is true and describes the current nature of our business.",
+    signatureFields: ["Name", "Designation", "Date", "Signature / Stamp"],
+  },
 };
 
 // Price range as text. `currency` is "₹" on the web; the PDF uses "INR "
 // because pdfkit's built-in Helvetica (WinAnsi) has no rupee glyph.
 export function priceRange(currency = "₹", p = COMPANY_PROFILE) {
-  const fmt = (n) => n.toLocaleString("en-IN");
   return `${currency}${fmt(p.catalogue.priceMin)} – ${currency}${fmt(p.catalogue.priceMax)}`;
 }
 
-// Key numbers table — ONLY facts the business has supplied.
-export function keyNumbers({ currency = "₹" } = {}, p = COMPANY_PROFILE) {
-  const fmt = (n) => n.toLocaleString("en-IN");
-  return [
-    { label: "Founded", value: String(p.founded) },
-    { label: "Online SKUs", value: fmt(p.catalogue.skus) },
-    { label: "Active ingredients", value: fmt(p.catalogue.activeIngredients) },
-    { label: "Price range per pack", value: priceRange(currency, p) },
-    { label: "Sales mix", value: `${p.salesMix.b2c}% B2C (farmers) / ${p.salesMix.b2b}% B2B` },
-    { label: "GST registrations", value: `${SITE.offices.length} (${SITE.offices.map((o) => o.label.replace(" Registration", "")).join(", ")})` },
-    { label: "Certifications", value: SITE.certifications.filter((c) => c.enabled).map((c) => c.name.replace(" certified", "")).join(", ") + " (MSME)" },
-    { label: "Sales channels", value: `${p.channels.length} — website, Jaipur store, institutional desk` },
-  ];
+// Social-selling statement for the PDF, driven by SITE.social: as long as no
+// profile URL is configured the business declares no social / third-party
+// marketplace sales; once profiles are set the sentence names them.
+export function socialStatement() {
+  const names = { facebook: "Facebook", instagram: "Instagram", youtube: "YouTube", linkedin: "LinkedIn", x: "X (Twitter)" };
+  const active = Object.entries(SITE.social ?? {})
+    .filter(([, url]) => Boolean(url))
+    .map(([key]) => names[key] ?? key);
+  if (active.length === 0) return "No sales through social media or third-party marketplaces at present.";
+  return `Social media presence: ${active.join(", ")} (brand communication only). Sales are made through the channels above; no sales through third-party marketplaces.`;
 }
 
 // "7 October 2026" from an ISO date (or a Date).
-export function formatProfileDate(d = COMPANY_PROFILE.figuresAsOf) {
+export function formatProfileDate(d) {
   const date = d instanceof Date ? d : new Date(`${d}T00:00:00`);
   return date.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 }
-
-export const profileDisclaimer = (p = COMPANY_PROFILE) =>
-  p.disclaimerTemplate.replace("{date}", formatProfileDate(p.figuresAsOf));

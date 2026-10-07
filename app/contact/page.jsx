@@ -58,7 +58,7 @@ const ContactContent = () => {
 
   return (
     <main className="pb-3">
-      <PageHeader eyebrow="Get in Touch" title="Reach Out To SURYAENTERPRISES" image="/assets/images/contact.jpg" crumbs={[{ label: "Contact" }]} />
+      <PageHeader eyebrow="Get in Touch" title="Reach Out To SURYA ENTERPRISES" image="/assets/images/contact.jpg" crumbs={[{ label: "Contact" }]} />
 
       {/* Main Content */}
       <div className="shell py-3">

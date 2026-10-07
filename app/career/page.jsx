@@ -157,7 +157,7 @@ const CareerContent = () => {
 
   return (
     <main className="pb-3">
-      <PageHeader eyebrow="Join Our Team" title="Cultivate Your Career" subtitle="Grow with SURYAENTERPRISES – Where innovation meets opportunity" image="/assets/images/career-banner.jpg" crumbs={[{ label: "Career" }]} />
+      <PageHeader eyebrow="Join Our Team" title="Cultivate Your Career" subtitle="Grow with SURYA ENTERPRISES – Where innovation meets opportunity" image="/assets/images/career-banner.jpg" crumbs={[{ label: "Career" }]} />
 
       {/* Main Content */}
       <div className="shell py-3">
@@ -174,17 +174,17 @@ const CareerContent = () => {
             </span>
           </h2>
           <p className="text-[15px] text-gray-600 leading-relaxed">
-            At SURYAENTERPRISES, we believe in nurturing not just crops, but also careers. We&apos;re on a mission to revolutionize
+            At SURYA ENTERPRISES, we believe in nurturing not just crops, but also careers. We&apos;re on a mission to revolutionize
             agriculture through innovation, sustainability, and a commitment to excellence. If you&apos;re passionate about
             making a meaningful impact and growing with a dynamic team, we invite you to explore the exciting career 
             opportunities we have to offer.
           </p>
         </div>
 
-        {/* Why Choose SURYAENTERPRISES - Creative Cards */}
+        {/* Why Choose SURYA ENTERPRISES - Creative Cards */}
         <div className="mb-20">
           <h3 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-10">
-            Why Choose <span className="text-green-600">SURYAENTERPRISES?</span>
+            Why Choose <span className="text-green-600">SURYA ENTERPRISES?</span>
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

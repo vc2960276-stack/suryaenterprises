@@ -31,7 +31,7 @@ const QualityAssuranceContent = () => {
           {/* Quality Text */}
           <div className="space-y-6 text-gray-600 text-lg leading-relaxed mb-6">
             <p>
-              Every product that bears the SURYAENTERPRISES name undergoes rigorous testing at multiple stages of production. 
+              Every product that bears the SURYA ENTERPRISES name undergoes rigorous testing at multiple stages of production. 
               From sourcing raw materials to the final formulation, precision and consistency are our hallmarks. Our 
               dedicated quality control team, comprising experienced chemists and agronomists, employs scientific 
               methodologies to ensure that each product meets the highest industry standards.
