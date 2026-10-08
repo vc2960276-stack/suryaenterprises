@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { AdminError, STAGES, buildProductMatcher, csvCell, fulfillmentUpdate, indiaDate, purchasedItems, shipmentReference } from "./core.mjs";
+import { maskMobile, maskMobileReferences } from "./mobile.mjs";
 
 const { ObjectId } = mongoose.Types;
 
@@ -52,7 +53,8 @@ export function createOrdersStore(db, gatewayDb, products, { now = () => new Dat
       amount: order.subtotal, currency: "INR", paymentStatus: "paid", paidAt: iso(paidAt), createdAt: iso(order.createdAt),
       dateBasis: order.paidAt ? "payment_confirmed" : "record_updated", providerPaidAt: iso(gateway?.paidAt),
       source: gateway ? "gateway" : "storefront", gatewayStatus: gateway?.status || null, callbackStatus: gateway?.callbackStatus || null,
-      customer: { name: [customer.firstName, customer.lastName].filter(Boolean).join(" ") || "Customer", email: customer.email || "", phone: customer.phone || "",
+      customer: { name: [customer.firstName, customer.lastName].filter(Boolean).join(" ") || "Customer",
+        email: maskMobileReferences(customer.email, [customer.phone, ops?.customerPhone]), phone: maskMobile(ops?.customerPhone ?? customer.phone),
         address: delivery.address ?? [customer.address, customer.apartment].filter(Boolean).join(", "),
         city: delivery.city ?? customer.city ?? "", state: delivery.state ?? customer.state ?? "", pinCode: delivery.pinCode ?? customer.pinCode ?? "" },
       assignment, catalogMatch: purchased ? null : selected,
@@ -60,7 +62,8 @@ export function createOrdersStore(db, gatewayDb, products, { now = () => new Dat
       fulfillmentStatus: ops?.fulfillmentStatus || (purchased ? "processing" : "unassigned"), shipment: ops?.shipment || {},
       notes: ops?.notes || "", revision: ops?.revision || 0,
     };
-    if (detail) row.history = [{ at: iso(paidAt), action: "payment_recorded", note: "Successful PayU payment in MongoDB." }, ...(ops?.history || []).map(h => ({ ...h, at: iso(h.at) }))];
+    if (detail) row.history = [{ at: iso(paidAt), action: "payment_recorded", note: "Successful PayU payment in MongoDB." }, ...(ops?.history || []).map(h => ({ ...h, at: iso(h.at),
+      ...(h.phone !== undefined ? { phone: maskMobile(h.phone) } : {}), ...(h.previousPhone !== undefined ? { previousPhone: maskMobile(h.previousPhone) } : {}) }))];
     return row;
   };
   const enrich = async (rows, detail = false) => {
@@ -77,6 +80,9 @@ export function createOrdersStore(db, gatewayDb, products, { now = () => new Dat
       match.$or = ["orderId", "transactionId", "payuTxnId", "payuPaymentId", "payuBankRefNum", "customer.firstName", "customer.lastName", "customer.email", "customer.phone"].map(field => ({ [field]: pattern }));
       match.$or.push({ $expr: { $regexMatch: { input: { $concat: [{ $ifNull: ["$customer.firstName", ""] }, " ", { $ifNull: ["$customer.lastName", ""] }] }, regex: regex(filters.q), options: "i" } } });
       if (external.length) match.$or.push({ orderId: { $in: external.map(t => t.transactionId) } });
+      const correctedPhones = await operations.find({ customerPhone: pattern }, { projection: { _id: 1 } }).limit(1001).toArray();
+      if (correctedPhones.length > 1000) throw new AdminError("Refine the customer mobile search to match fewer orders.");
+      if (correctedPhones.length) match.$or.push({ _id: { $in: correctedPhones.map(row => idFor(row._id)) } });
     }
     const result = [{ $match: match }];
     if (filters.start || filters.end) result.push({ $match: timeMatch(filters.start, filters.end) });
@@ -121,13 +127,18 @@ export function createOrdersStore(db, gatewayDb, products, { now = () => new Dat
   const update = async (id, body) => {
     const current = await detail(id);
     if (current.revision !== body.revision) throw new AdminError("This order changed. Reload it before saving.", 409);
-    const change = fulfillmentUpdate(current, body, now());
+    const ops = await operations.findOne({ _id: id });
+    let changeContext = current;
+    if (body.action === "customer-mobile") {
+      const original = await orders.findOne({ ...SUCCESS, _id: idFor(id) }, { projection: { "customer.phone": 1 } });
+      changeContext = { ...current, customer: { ...current.customer, phone: ops?.customerPhone ?? original?.customer?.phone ?? "" } };
+    }
+    const change = fulfillmentUpdate(changeContext, body, now());
     if (body.action === "confirm-product") {
       const productSnapshot = matcher.match(current.amount, current.transactionId, body.sku);
       if (!productSnapshot) throw new AdminError("Catalog product not found.", 422);
       change.set.productSnapshot = productSnapshot;
     }
-    const ops = await operations.findOne({ _id: id });
     try {
       if (!ops) {
         await operations.insertOne({ _id: id, orderId: current.orderId, revision: 1, createdAt: now(), updatedAt: now(), ...change.set, history: [change.event] });

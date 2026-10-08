@@ -20,7 +20,8 @@ test("private admin authenticates, reconciles real Mongo rows and logs fulfillme
   const a = { _id: new mongoose.Types.ObjectId(), ...base, orderId: "GATEWAY-A", transactionId: "PAYU-TXN-A", subtotal: 500, payuPaymentId: "PAYU-ID-A", payuBankRefNum: "REAL-UTR-A", paidAt: new Date("2026-10-08T08:00:00Z") };
   const b = { _id: new mongoose.Types.ObjectId(), ...base, orderId: "STORE-B", transactionId: "PAYU-TXN-B", subtotal: 400, payuPaymentId: "PAYU-ID-B",
     items: [{ sku: "P400", name: "Fixture nutrition", price: 400, quantity: 1 }] };
-  const c = { _id: new mongoose.Types.ObjectId(), ...base, orderId: "GATEWAY-C", transactionId: "PAYU-TXN-C", subtotal: 450, payuPaymentId: "PAYU-ID-C", updatedAt: new Date("2026-10-07T07:00:00Z") };
+  const c = { _id: new mongoose.Types.ObjectId(), ...base, orderId: "GATEWAY-C", transactionId: "PAYU-TXN-C", subtotal: 450, payuPaymentId: "PAYU-ID-C", updatedAt: new Date("2026-10-07T07:00:00Z"),
+    customer: { ...base.customer, email: "cust9999999999@example.invalid" } };
   try {
     await ensureAdminIndexes(db);
     await db.collection("store_admin_settings").insertOne({ _id: "access", keyHash: hashPassword("synthetic-admin-key") });
@@ -132,6 +133,33 @@ test("private admin authenticates, reconciles real Mongo rows and logs fulfillme
       assert.deepEqual(updated.history.at(-1).address, address);
       await assert.rejects(store.update(id, { revision: before.revision, action: "customer-address", address: { ...address, address: "Stale overwrite" } }), e => e.status === 409);
       assert.equal((await store.detail(id)).customer.address, address.address);
+      assert.deepEqual(await db.collection("orders").find({}).sort({ _id: 1 }).toArray(), financialBefore);
+    });
+    await t.test("mobiles stay masked across admin responses and exports; edits preserve payments and detect stale writes", async () => {
+      const financialBefore = await db.collection("orders").find({}).sort({ _id: 1 }).toArray();
+      const filters = dashboardFilters(new URLSearchParams("range=all"), now);
+      const id = String(c._id), before = await store.detail(id);
+      assert.equal(before.customer.phone, "******9999");
+      assert.equal(before.customer.email, "cust******9999@example.invalid");
+      assert.doesNotMatch(await store.exportCsv(filters), /9999999999/);
+      for (const phone of ["1234", "+1 9876543210", "91919876543210", "word9876543210"])
+        await assert.rejects(store.update(id, { revision: before.revision, action: "customer-mobile", phone }), error => error.status === 422);
+      const updated = await store.update(id, { revision: before.revision, action: "customer-mobile", phone: "+91 98765 43210" });
+      assert.equal(updated.customer.phone, "******3210");
+      assert.equal(updated.customer.email, before.customer.email); assert.equal(updated.customer.name, before.customer.name);
+      assert.equal(updated.customer.address, before.customer.address); assert.equal(updated.fulfillmentStatus, before.fulfillmentStatus);
+      assert.equal(updated.history.at(-1).action, "customer_mobile_updated");
+      assert.equal(updated.history.at(-1).previousPhone, "******9999"); assert.equal(updated.history.at(-1).phone, "******3210");
+      assert.doesNotMatch(JSON.stringify(updated), /9999999999|9876543210/);
+      const privateRecord = await db.collection("store_admin_orders").findOne({ _id: id });
+      assert.equal(privateRecord.customerPhone, "9876543210"); assert.equal(privateRecord.history.at(-1).previousPhone, "9999999999");
+      await assert.rejects(store.update(id, { revision: before.revision, action: "customer-mobile", phone: "9876543211" }), error => error.status === 409);
+      await assert.rejects(store.update(id, { revision: updated.revision, action: "customer-mobile", phone: "919876543210" }), error => error.status === 422);
+      const list = await store.dashboard(filters); assert.equal(list.orders.find(row => row.id === id).customer.phone, "******3210");
+      assert.doesNotMatch(JSON.stringify(list), /9999999999|9876543210/);
+      const csv = await store.exportCsv(filters); assert.match(csv, /\*{6}3210/); assert.doesNotMatch(csv, /9999999999|9876543210/);
+      const search = await store.dashboard(dashboardFilters(new URLSearchParams("range=all&q=9876543210"), now));
+      assert.equal(search.orders.length, 1); assert.equal(search.orders[0].id, id);
       assert.deepEqual(await db.collection("orders").find({}).sort({ _id: 1 }).toArray(), financialBefore);
     });
   } finally {

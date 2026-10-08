@@ -30,4 +30,8 @@ Manual status corrections require a reason and retain the previous stage and shi
 
 Each order's Customer & delivery section allows adding or correcting its delivery address, city, state and Indian PIN code. Updates require the current revision, retain the previous and new address in private audit history, and leave the original customer contact, payment and fulfillment records unchanged. No address is populated automatically for historical payments.
 
+Customer mobile numbers show only the last four digits throughout admin lists, details, responses, CSV exports and mobile-change history. The order drawer allows recording a corrected Indian mobile number using a blank editor; it never reveals the original number. Revision-checked edits keep the original payment/customer document unchanged and store the correction and full previous/new values only in the private operations collection. Searching by the original or corrected number remains supported. The order timeline appears before the other detail sections.
+
+Where an integration-generated email contains the original or corrected mobile digits, those digits are masked in the admin display and exports as well; the original email remains unchanged in the payment document.
+
 An operator can record a reported manual review using `scripts/confirm-reviewed-orders.mjs` with an attestation JSON on stdin (`ownerReportedManualReview`, `note`, `range`). It confirms current catalog associations only for unassigned/processing records and stores the owner-reported source and statement in history. It preserves original payment documents and absent purchase line items, and does not manufacture shipments, quantities or storefront sales. Repeating it skips already confirmed associations.

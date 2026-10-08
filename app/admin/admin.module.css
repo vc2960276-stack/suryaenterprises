@@ -288,6 +288,13 @@
 .buyerContact { display: flex; flex-wrap: wrap; gap: 5px 15px; margin-top: 7px; color: #84927e; font-size: 10px; }
 .buyerContact a { color: #688460; }
 .buyerContact a:hover { text-decoration: underline; }
+.maskedMobile { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: .025em; color: #627c58; }
+.customerActions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 19px; margin-top: 13px; }
+.customerActions .textButton { font-size: 9px !important; }
+.mobileEditor { margin-top: 17px; padding-top: 16px; border-top: 1px dashed #dfe8d7; }
+.mobileEditor .fieldHint { margin-top: 0 !important; font-weight: 400; }
+.mobileEditor .inlineError { margin-top: 0 !important; font-size: 10px; }
+.mobileEditor [aria-invalid="true"] { border-color: #bb6f46; background: #fff9f4; }
 .buyerCard address { padding-top: 13px; margin-top: 13px; border-top: 1px solid #e4ecdd; font-style: normal; color: #6c7e62; font-size: 11px; line-height: 1.7; }
 .addressEditButton { font-size: 9px !important; margin-bottom: 14px; white-space: nowrap; }
 .addressEditor { padding-top: 16px; margin-top: 16px; border-top: 1px dashed #dfe8d7; }

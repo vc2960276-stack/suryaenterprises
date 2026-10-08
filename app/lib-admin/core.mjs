@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { parseIndianMobile } from "./mobile.mjs";
 
 export class AdminError extends Error {
   constructor(message, status = 400) { super(message); this.status = status; }
@@ -97,6 +98,14 @@ export function fulfillmentUpdate(current, body, now = new Date()) {
     const notes = String(body.notes || "").trim();
     if (notes.length > 2000) throw new AdminError("Notes are limited to 2,000 characters.");
     return { set: { notes }, event: { ...event, note: notes } };
+  }
+  if (body.action === "customer-mobile") {
+    const phone = parseIndianMobile(body.phone);
+    if (!phone) throw new AdminError("Enter a valid ten-digit Indian mobile number, optionally prefixed with +91.", 422);
+    const previousPhone = String(current.customer?.phone || "");
+    if (phone === parseIndianMobile(previousPhone)) throw new AdminError("The customer mobile number has not changed.", 422);
+    return { set: { customerPhone: phone }, event: { ...event, action: "customer_mobile_updated", previousPhone, phone,
+      note: note || "Admin updated the customer mobile number." } };
   }
   if (body.action === "customer-address") {
     const input = body.address;

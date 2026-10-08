@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildProductMatcher, csvCell, dashboardFilters, fulfillmentUpdate } from "../app/lib-admin/core.mjs";
 import { prepareStorefrontPurchase } from "../app/lib/checkoutOrder.mjs";
+import { maskMobile, parseIndianMobile } from "../app/lib-admin/mobile.mjs";
 
 const catalog = [
   { sku: "A", name: "Seeds", price: 400, stock: 20, image: "/assets/catalog/a.webp" },
@@ -41,6 +42,12 @@ test("CSV exports neutralize user-controlled spreadsheet formulas", () => {
   assert.equal(csvCell('=HYPERLINK("bad")'), '"\'=HYPERLINK(""bad"")"');
   assert.equal(csvCell("+919123456789"), '"\'+919123456789"');
   assert.equal(csvCell("normal,name"), '"normal,name"');
+});
+test("mobile masking is stable for formatted/masked numbers and validation cannot truncate foreign or oversized input", () => {
+  assert.equal(maskMobile("+91 98765 43210"), "******3210"); assert.equal(maskMobile("******3210"), "******3210");
+  assert.equal(maskMobile("123"), "***"); assert.equal(maskMobile(null), "");
+  assert.equal(parseIndianMobile("+91 (98765) 43210"), "9876543210"); assert.equal(parseIndianMobile("9876543210"), "9876543210");
+  for (const value of ["+1 9876543210", "91919876543210", "phone9876543210", "******3210", "1234567890", 9876543210]) assert.equal(parseIndianMobile(value), "");
 });
 test("manual corrections require a reason and preserve earlier shipment evidence", () => {
   const current = { assignment: "confirmed", fulfillmentStatus: "shipped", shipment: { carrier: "DTDC", trackingId: "fixture-tracking", shippedAt: new Date("2026-10-07T12:00:00Z") } };
